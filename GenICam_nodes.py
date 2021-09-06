@@ -5,9 +5,11 @@ with Harvester() as h:
     h.add_cti_file('/opt/mvIMPACT_Acquire/lib/x86_64/mvGenTLProducer.cti')
     h.update_device_info_list()
     with h.create_image_acquirer(0) as ia:
-        a = dir(ia.remote_device.node_map)
-        for i in a:
-            print(i)
+        ia.remote_device.node_map.PixelFormat.value = 'BayerGR8'
+        print(ia.remote_device.node_map.PixelFormat.value)
+        # a = dir(ia.remote_device.node_map)
+        # for i in a:
+        #    print(i)
 
 # GenICam Nodes
 
