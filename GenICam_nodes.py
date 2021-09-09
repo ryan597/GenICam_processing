@@ -7,8 +7,7 @@ with Harvester() as h:
     with h.create_image_acquirer(0) as ia:
         ia.remote_device.node_map.PixelFormat.value = 'BayerGR8'
         print(ia.remote_device.node_map.PixelFormat.value)
-        # a = dir(ia.remote_device.node_map)
-        # for i in a:
+        # for i in dir(ia.remote_device.node_map):
         #    print(i)
 
 # GenICam Nodes
