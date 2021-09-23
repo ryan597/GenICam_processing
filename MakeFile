@@ -1,0 +1,14 @@
+SRCDIR='src/'
+BLDDIR='build/'
+
+
+main.out: CameraAquisition.o
+	g++ CameraAquisition.o -o main.out
+
+CameraAquisition.o: CameraAquisition.cpp
+	g++ -c CameraAquisition.cpp
+
+
+.PHONY: clean
+clean:
+	rm -r *.o *.out
