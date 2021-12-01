@@ -1,19 +1,24 @@
-from __future__ import print_function
 import os
 import platform
 import sys
-# import all the stuff from mvIMPACT Acquire into the current scope
-from mvIMPACT import acquire
-# import all the mvIMPACT Acquire related helper function such as 'conditionalSetProperty' into the current scope
-# If you want to use this module in your code feel free to do so but make sure the 'Common' folder resides in a sub-folder of your project then
-from mvIMPACT.Common import exampleHelper
-
-# For systems with NO mvDisplay library support
 import ctypes
 import cv2
 import numpy
+import argparse
 from PIL import Image
 
+# import all the stuff from mvIMPACT Acquire into the current scope
+from mvIMPACT import acquire
+from mvIMPACT.Common import exampleHelper
+
+"""
+TO-DO: 
+    Argument parsing
+    Refactoring - remove helpers for parsed args and built-in funcs
+"""
+
+
+# Select device, virtual devices available
 devMgr = acquire.DeviceManager()
 pDev = exampleHelper.getDeviceFromUserInput(devMgr)
 if pDev == None:
@@ -60,24 +65,11 @@ for i in range(framesToCapture):
         pPreviousRequest = pRequest
         fi.imageRequestSingle()
     else:
-        # Please note that slow systems or interface technologies in combination with high resolution sensors
-        # might need more time to transmit an image than the timeout value which has been passed to imageRequestWaitFor().
-        # If this is the case simply wait multiple times OR increase the timeout(not recommended as usually not necessary
-        # and potentially makes the capture thread less responsive) and rebuild this application.
-        # Once the device is configured for triggered image acquisition and the timeout elapsed before
-        # the device has been triggered this might happen as well.
-        # The return code would be -2119(DEV_WAIT_FOR_REQUEST_FAILED) in that case, the documentation will provide
-        # additional information under TDMR_ERROR in the interface reference.
-        # If waiting with an infinite timeout(-1) it will be necessary to call 'imageRequestReset' from another thread
-        # to force 'imageRequestWaitFor' to return when no data is coming from the device/can be captured.
         print("imageRequestWaitFor failed (" + str(requestNr) + ", " + acquire.ImpactAcquireException.getErrorCodeAsString(requestNr) + ")")
+
 exampleHelper.manuallyStopAcquisitionIfNeeded(pDev, fi)
-exampleHelper.requestENTERFromUser()
-
-
-
-
-
+#exampleHelper.requestENTERFromUser()
+print(f"Finished...")
 
 """
 #### callback
