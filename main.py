@@ -18,7 +18,7 @@ from harvesters.util.pfnc import mono_location_formats, bgr_formats
 # save correctly in h5 files s
 ###############################################################################
 
-
+"""
 class H5ImageDataset():
     # readwrite : 'w' for writing new dataset
     #             'r' for reading images
@@ -90,7 +90,7 @@ class H5ImageDataset():
 
     def close(self):
         self.h5file.close()
-
+"""
 
 def collect_images(h5path,
                    cti_file,
@@ -132,15 +132,13 @@ def reshape_image(component):
 
 if __name__ == "__main__":
 
-    H5PATH = './test.h5'
+    PATH = 'data/'
     MAX_IMAGES = 110
-    CTI_FILE = '/opt/mvIMPACT_Acquire/lib/x86_64/mvGenTLProducer.cti'
-    # '/opt/cvb-13.03.003/drivers/genicam/libGevTL.cti'
+    # CTI_FILE = '/opt/mvIMPACT_Acquire/lib/x86_64/mvGenTLProducer.cti'
+    CTI_FILE = '/opt/cvb-13.03.003/drivers/genicam/libGevTL.cti'
 
-    collect_images(H5PATH, CTI_FILE, MAX_IMAGES)
+    collect_images(PATH, CTI_FILE, MAX_IMAGES)
 
-    dataset = H5ImageDataset(H5PATH, readwrite='r')
-    images = dataset.read()
-    img1 = images[0]
+    img1 = cv2.imread("data/1.png")
     plt.imshow(img1, 'gray')
     plt.show()
