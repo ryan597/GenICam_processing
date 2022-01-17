@@ -2,20 +2,16 @@
 Program to interact with GenICam devices. Stores images in a H5 dataset.
 """
 import time
-import numpy as np
-import h5py
 import matplotlib.pyplot as plt
 import cv2
+import argparse
 
 from harvesters.core import Harvester
 from harvesters.util.pfnc import mono_location_formats, bgr_formats
 
 ###############################################################################
 #                                   To Do
-# Dont write first image to h5 file. init with empty shape (1000, h, w, p)
 # convert image to save as rgb func
-# save images as grayscale
-# save correctly in h5 files s
 ###############################################################################
 
 """
@@ -92,7 +88,8 @@ class H5ImageDataset():
         self.h5file.close()
 """
 
-def collect_images(h5path,
+
+def collect_images(path,
                    cti_file,
                    max_images=100
                    ):
@@ -109,7 +106,7 @@ def collect_images(h5path,
                     if payload.components:  # empty lists evaluate to False
                         component = payload.components[0]
                         img = reshape_image(component)
-                        cv2.imwrite(f'data/{count}.png', img)
+                        cv2.imwrite(f'{path}/{count}.png', img)
                         count += 1
     end = time.perf_counter()
     print(end - start)
@@ -132,7 +129,15 @@ def reshape_image(component):
 
 if __name__ == "__main__":
 
-    PATH = 'data/'
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-p", "--path",
+                        help="Path of directory to save images")
+    parser.add_argument("-n", "--numimg",
+                        help="Max number of images to capture")
+
+    args = parser.parse_args()
+
+    PATH = 'data'
     MAX_IMAGES = 110
     # CTI_FILE = '/opt/mvIMPACT_Acquire/lib/x86_64/mvGenTLProducer.cti'
     CTI_FILE = '/opt/cvb-13.03.003/drivers/genicam/libGevTL.cti'
