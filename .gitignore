@@ -1,15 +1,1 @@
-*.h5
 data/**
-
-# Ignore mvIMPACT folders
-apps/**
-common/**
-DriverBase/**
-mvDeviceManager/**
-lib/**
-FirmwareUpdates/**
-mvIMPACT_CPP/**
-mvPropHandling/**
-
-
-.vscode/**

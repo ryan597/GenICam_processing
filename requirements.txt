@@ -1,4 +1,5 @@
 genicam2
+genicam
 h5py
 harvesters
 harvesters-gui

@@ -108,6 +108,8 @@ def collect_images(path,
                         img = reshape_image(component)
                         cv2.imwrite(f'{path}/{count}.png', img)
                         count += 1
+                    else:
+                        print("EMPTY PAYLOAD")
     end = time.perf_counter()
     print(end - start)
 
