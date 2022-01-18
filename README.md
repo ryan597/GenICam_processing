@@ -54,20 +54,31 @@ pip freeze >> requirements.txt
 <details>
     <summary>Dependencies list</summary>
 
-- genicam2
-- h5py
-- harvesters
-- harvesters-gui
-- matplotlib
+- opencv
 - numpy
 - Pillow
-- PyQt5
 
 </details>
+
+### mvIMPACT
+
+This software was written using the mvIMPACT_Acquire Python SDK and its supplied GenTL.
+Install the mvIMPACT software for your device using the downloads page [here](http://static.matrix-vision.com/mvIMPACT_Acquire/2.45.0/).
 
 ---
 
 ## 3. Operation
+
+Running the scripts for triggering of the camera is simple using the command line interface.
+
+```bash
+conda activate genicam
+python main.py
+```
+
+See the help function for the arguments that can be passed to the program such as device numbers, max number of images to acquire, time of operation etc.
+
+A simple bash script is also provided for scheduling the operation of the cameras for more regular intervals. This is `triggering.sh` and can be configured using the JSON file `camera_settings.json` in the config folder. Other parameters of the camera can also be changed through this JSON file. ***(NOT YET IMPLEMENTED)***
 
 ## [License](LICENSE)
 
