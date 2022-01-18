@@ -1,151 +1,105 @@
-"""
-Program to interact with GenICam devices. Stores images in a H5 dataset.
-"""
-import time
-import matplotlib.pyplot as plt
+from __future__ import print_function
+import os
+import platform
+import sys
+# import all the stuff from mvIMPACT Acquire into the current scope
+from mvIMPACT import acquire
+# import all the mvIMPACT Acquire related helper function such as 'conditionalSetProperty' into the current scope
+# If you want to use this module in your code feel free to do so but make sure the 'Common' folder resides in a sub-folder of your project then
+from mvIMPACT.Common import exampleHelper
+
+# For systems with NO mvDisplay library support
+import ctypes
 import cv2
-import argparse
+import numpy
+from PIL import Image
 
-from harvesters.core import Harvester
-from harvesters.util.pfnc import mono_location_formats, bgr_formats
+devMgr = acquire.DeviceManager()
+pDev = exampleHelper.getDeviceFromUserInput(devMgr)
+if pDev == None:
+    exampleHelper.requestENTERFromUser()
+    sys.exit(-1)
+pDev.open()
 
-###############################################################################
-#                                   To Do
-# convert image to save as rgb func
-###############################################################################
+print("Please enter the number of buffers to capture followed by [ENTER]: ", end='')
+framesToCapture = exampleHelper.getNumberFromUser()
+if framesToCapture < 1:
+    print("Invalid input! Please capture at least one image")
+    sys.exit(-1)
 
-"""
-class H5ImageDataset():
-    # readwrite : 'w' for writing new dataset
-    #             'r' for reading images
-    #             'a' for appending to existing dataset
-    def __init__(self, h5path, component=None, readwrite='w', verbose=True):
-        if readwrite == 'w':
-            image = self.first_image(component)
-            self.h5file = h5py.File(h5path, readwrite)
-            dataset = self.h5file.create_dataset('images',
-                                                 shape=(1,
-                                                        self.height,
-                                                        self.width,
-                                                        self.pixel),
-                                                 data=image,
-                                                 dtype=np.int8,
-                                                 maxshape=(None,
-                                                           self.height,
-                                                           self.width,
-                                                           self.pixel))
-            dataset.attrs.create('format', self.data_format)
-            dataset.attrs['height'] = self.height,
-            dataset.attrs['width'] = self.width,
-            dataset.attrs['pixel'] = self.pixel
-            self.h5file.close()
-            if verbose:
-                print(f"Writing to path: {h5path}\n",
-                      f"Using data format: {self.data_format}\n",
-                      f"Image shape: {image.shape}")
+fi = acquire.FunctionInterface(pDev)
+statistics = acquire.Statistics(pDev)
 
-            self.dataset = h5py.File(h5path, 'a')['images']
-        elif readwrite == 'r':
-            self.dataset = h5py.File(h5path, 'r')['images']
-        elif readwrite == 'a':
-            self.dataset = h5py.File(h5path, 'a')['images']
+while fi.imageRequestSingle() == acquire.DMR_NO_ERROR:
+    print("Buffer queued")
+pPreviousRequest = None
 
-    def first_image(self, component):
-        self.set_format(component)
-        return self.reshape_image(component)
+exampleHelper.manuallyStartAcquisitionIfNeeded(pDev, fi)
+for i in range(framesToCapture):
+    requestNr = fi.imageRequestWaitFor(10000)
+    if fi.isRequestNrValid(requestNr):
+        pRequest = fi.getRequest(requestNr)
+        if pRequest.isOK:
+            if i%100 == 0:  # statistics every 100 frames
+                print("Info from " + pDev.serial.read() +
+                         ": " + statistics.framesPerSecond.name() + ": " + statistics.framesPerSecond.readS() +
+                         ", " + statistics.errorCount.name() + ": " + statistics.errorCount.readS() +
+                         ", " + statistics.captureTime_s.name() + ": " + statistics.captureTime_s.readS())
+            # For systems with NO mvDisplay library support
+            cbuf = (ctypes.c_char * pRequest.imageSize.read()).from_address(int(pRequest.imageData.read()))
+            channelType = numpy.uint16 if pRequest.imageChannelBitDepth.read() > 8 else numpy.uint8
+            arr = numpy.fromstring(cbuf, dtype = channelType)
+            arr.shape = (pRequest.imageHeight.read(), pRequest.imageWidth.read(), pRequest.imageChannelCount.read()+1)
+            img = arr[:,:,:3]
+            print(img.shape)
 
-    def write_image(self, component):
-        index = len(self.dataset)
-        image = self.reshape_image(component)
-        self.dataset.resize(index+1, axis=0)
-        self.dataset[index, :, :, :] = image
-        print(index)
+            cv2.imwrite(f"data/{i}.png", img)
 
-    def reshape_image(self, component):
-        if self.data_format in mono_location_formats:
-            image = component.data.reshape(self.height, self.width)
-        else:
-            image = component.data.reshape(self.height, self.width, self.pixel)
-            if self.data_format in bgr_formats:
-                # swap each R and B
-                image = image[:, :, ::-1]
-        return image
-
-    def set_format(self, component):
-        self.width = component.width
-        self.height = component.height
-        self.data_format = component.data_format
-        self.pixel = int(component.num_components_per_pixel)
-
-    def read(self, index='return all images'):
-        if index == 'return all images':
-            return self.dataset
-        else:
-            image = self.dataset[index]
-            return image
-
-    def close(self):
-        self.h5file.close()
-"""
-
-
-def collect_images(path,
-                   cti_file,
-                   max_images=100
-                   ):
-    with Harvester() as h:
-        h.add_cti_file(cti_file)
-        h.update_device_info_list()
-        with h.create_image_acquirer(0) as ia:
-            ia.start_image_acquisition()
-            count = 0
-            start = time.perf_counter()
-            while count < max_images:
-                with ia.fetch_buffer() as buffer:
-                    payload = buffer.payload
-                    if payload.components:  # empty lists evaluate to False
-                        component = payload.components[0]
-                        img = reshape_image(component)
-                        cv2.imwrite(f'{path}/{count}.png', img)
-                        count += 1
-                    else:
-                        print("EMPTY PAYLOAD")
-    end = time.perf_counter()
-    print(end - start)
-
-
-def reshape_image(component):
-    width = component.width
-    height = component.height
-    data_format = component.data_format
-    pixel = int(component.num_components_per_pixel)
-    if data_format in mono_location_formats:
-        image = component.data.reshape(height, width)
+        if pPreviousRequest != None:
+            pPreviousRequest.unlock()
+        pPreviousRequest = pRequest
+        fi.imageRequestSingle()
     else:
-        image = component.data.reshape(height, width, pixel)
-        if data_format in bgr_formats:
-            # swap each R and B
-            image = image[:, :, ::-1]
-    return image
+        # Please note that slow systems or interface technologies in combination with high resolution sensors
+        # might need more time to transmit an image than the timeout value which has been passed to imageRequestWaitFor().
+        # If this is the case simply wait multiple times OR increase the timeout(not recommended as usually not necessary
+        # and potentially makes the capture thread less responsive) and rebuild this application.
+        # Once the device is configured for triggered image acquisition and the timeout elapsed before
+        # the device has been triggered this might happen as well.
+        # The return code would be -2119(DEV_WAIT_FOR_REQUEST_FAILED) in that case, the documentation will provide
+        # additional information under TDMR_ERROR in the interface reference.
+        # If waiting with an infinite timeout(-1) it will be necessary to call 'imageRequestReset' from another thread
+        # to force 'imageRequestWaitFor' to return when no data is coming from the device/can be captured.
+        print("imageRequestWaitFor failed (" + str(requestNr) + ", " + acquire.ImpactAcquireException.getErrorCodeAsString(requestNr) + ")")
+exampleHelper.manuallyStopAcquisitionIfNeeded(pDev, fi)
+exampleHelper.requestENTERFromUser()
 
 
-if __name__ == "__main__":
 
-    parser = argparse.ArgumentParser()
-    parser.add_argument("-p", "--path",
-                        help="Path of directory to save images")
-    parser.add_argument("-n", "--numimg",
-                        help="Max number of images to capture")
 
-    args = parser.parse_args()
 
-    PATH = 'data'
-    MAX_IMAGES = 110
-    # CTI_FILE = '/opt/mvIMPACT_Acquire/lib/x86_64/mvGenTLProducer.cti'
-    # CTI_FILE = '/opt/cvb-13.03.003/drivers/genicam/libGevTL.cti'
-    CTI_FILE = '/opt/mvIMPACT_Acquire/lib/arm64/mvGenTLProducer.cti'
-    collect_images(PATH, CTI_FILE, MAX_IMAGES)
 
-    img1 = cv2.imread("data/1.png")
-    plt.imshow(img1, 'gray')
-    plt.show()
+"""
+#### callback
+from mvIMPACT import acquire
+
+class MyCallback(acquire.ComponentCallback):
+  def __init__(self, pUserData=None):
+    acquire.ComponentCallback.__init__(self)
+    self.pUserData_ = pUserData
+    self.executeHitCount_ = 0
+
+  def execute(self, c, pUserData):
+    try:
+      # here you would actually do what is important for you! Please IGNORE the 'pUserData' parameter
+      # coming into this function! Use the one you did provide in you constructor call instead for
+      # whatever is necessary (e.g. cast it to an instance of a class you might want to call). Counting
+      # the number of times this function got called is a silly example only! Remove this in a real world
+      # application!
+      self.executeHitCount_ += 1
+    except Exception as e:
+      print("An exception has been raised by code that is not supposed to raise one: '" + str(e) +
+            "'! If this is NOT handled here the application will crash as this Python exception instance will be returned back into the native code that fired the callback!")
+
+cb = MyCallback(self) # Here we pass the instance of the class we are currently in to the callback.
+"""
