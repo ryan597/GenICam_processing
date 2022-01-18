@@ -9,9 +9,10 @@ from mvIMPACT import acquire
 from mvIMPACT.Common import exampleHelper
 
 # For systems with NO mvDisplay library support
-#import ctypes
-#import Image
-#import numpy
+import ctypes
+import cv2
+import numpy
+from PIL import Image
 
 devMgr = acquire.DeviceManager()
 pDev = exampleHelper.getDeviceFromUserInput(devMgr)
@@ -26,13 +27,6 @@ if framesToCapture < 1:
     print("Invalid input! Please capture at least one image")
     sys.exit(-1)
 
-# The mvDisplay library is only available on Windows systems for now
-isDisplayModuleAvailable = platform.system() == "Windows"
-if isDisplayModuleAvailable:
-    display = acquire.ImageDisplayWindow("A window created from Python")
-else:
-    print("The mvIMPACT Acquire display library is not available on this('" + platform.system() + "') system. Consider using the PIL(Python Image Library) and numpy(Numerical Python) packages instead. Have a look at the source code of this application to get an idea how.")
-
 fi = acquire.FunctionInterface(pDev)
 statistics = acquire.Statistics(pDev)
 
@@ -46,24 +40,21 @@ for i in range(framesToCapture):
     if fi.isRequestNrValid(requestNr):
         pRequest = fi.getRequest(requestNr)
         if pRequest.isOK:
-            if i%100 == 0:
+            if i%100 == 0:  # statistics every 100 frames
                 print("Info from " + pDev.serial.read() +
                          ": " + statistics.framesPerSecond.name() + ": " + statistics.framesPerSecond.readS() +
                          ", " + statistics.errorCount.name() + ": " + statistics.errorCount.readS() +
                          ", " + statistics.captureTime_s.name() + ": " + statistics.captureTime_s.readS())
-            if isDisplayModuleAvailable:
-                display.GetImageDisplay().SetImage(pRequest)
-                display.GetImageDisplay().Update()
             # For systems with NO mvDisplay library support
-            #cbuf = (ctypes.c_char * pRequest.imageSize.read()).from_address(int(pRequest.imageData.read()))
-            #channelType = numpy.uint16 if pRequest.imageChannelBitDepth.read() > 8 else numpy.uint8
-            #arr = numpy.fromstring(cbuf, dtype = channelType)
-            #arr.shape = (pRequest.imageHeight.read(), pRequest.imageWidth.read(), pRequest.imageChannelCount.read())
+            cbuf = (ctypes.c_char * pRequest.imageSize.read()).from_address(int(pRequest.imageData.read()))
+            channelType = numpy.uint16 if pRequest.imageChannelBitDepth.read() > 8 else numpy.uint8
+            arr = numpy.fromstring(cbuf, dtype = channelType)
+            arr.shape = (pRequest.imageHeight.read(), pRequest.imageWidth.read(), pRequest.imageChannelCount.read()+1)
+            img = arr[:,:,:3]
+            print(img.shape)
 
-            #if channelCount == 1:
-            #    img = Image.fromarray(arr)
-            #else:
-            #    img = Image.fromarray(arr, 'RGBA' if alpha else 'RGB')
+            cv2.imwrite(f"data/{i}.png", img)
+
         if pPreviousRequest != None:
             pPreviousRequest.unlock()
         pPreviousRequest = pRequest

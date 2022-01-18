@@ -142,8 +142,8 @@ if __name__ == "__main__":
     PATH = 'data'
     MAX_IMAGES = 110
     # CTI_FILE = '/opt/mvIMPACT_Acquire/lib/x86_64/mvGenTLProducer.cti'
-    CTI_FILE = '/opt/cvb-13.03.003/drivers/genicam/libGevTL.cti'
-
+    # CTI_FILE = '/opt/cvb-13.03.003/drivers/genicam/libGevTL.cti'
+    CTI_FILE = '/opt/mvIMPACT_Acquire/lib/arm64/mvGenTLProducer.cti'
     collect_images(PATH, CTI_FILE, MAX_IMAGES)
 
     img1 = cv2.imread("data/1.png")
