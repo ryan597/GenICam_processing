@@ -17,81 +17,81 @@ TO-DO:
     Refactoring - remove helpers for parsed args and built-in funcs
 """
 
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-p", "--path", help="Path of directory to save images")
+    parser.add_argument("-n", "--num_images", help="Max number of images to capture")
+    parser.add_argument("-d", "--device", help="Device number to select, 0 for connected device, 1 for virtual device")
 
-# Select device, virtual devices available
-devMgr = acquire.DeviceManager()
-pDev = exampleHelper.getDeviceFromUserInput(devMgr)
-if pDev == None:
-    exampleHelper.requestENTERFromUser()
-    sys.exit(-1)
-pDev.open()
+    args = parser.parse_args()
+    path = args.path
+    max_frames = int(args.num_images)
+    device_number = int(args.device)
 
-print("Please enter the number of buffers to capture followed by [ENTER]: ", end='')
-framesToCapture = exampleHelper.getNumberFromUser()
-if framesToCapture < 1:
-    print("Invalid input! Please capture at least one image")
-    sys.exit(-1)
+    # Select device, virtual devices available
+    devMgr = acquire.DeviceManager()
+    pDev = devMgr.getDevice(device_number)
+    pDev.open()
 
-fi = acquire.FunctionInterface(pDev)
-statistics = acquire.Statistics(pDev)
+    fi = acquire.FunctionInterface(pDev)
+    statistics = acquire.Statistics(pDev)
+    
+    while fi.imageRequestSingle() == acquire.DMR_NO_ERROR:
+        print("Buffer queued")
+    pPreviousRequest = None
 
-while fi.imageRequestSingle() == acquire.DMR_NO_ERROR:
-    print("Buffer queued")
-pPreviousRequest = None
+    fi.acquisitionStart()
+    for i in range(max_frames):
+        requestNr = fi.imageRequestWaitFor(10000)
+        if fi.isRequestNrValid(requestNr):
+            pRequest = fi.getRequest(requestNr)
+            if pRequest.isOK:
+                channelType = numpy.uint16 if pRequest.imageChannelBitDepth.read() > 8 else numpy.uint8
+                if i%100 == 0:  # statistics every 100 frames
+                    print("Info from " + pDev.serial.read() +
+                             ": FPS: " + statistics.framesPerSecond.readS() +
+                             ", Frame Count: " + statistics.frameCount.readS() +
+                             ", Error Count: " + statistics.errorCount.readS() +
+                            ", Capture Time (s): " + statistics.captureTime_s.readS())
+                
+                cbuf = (ctypes.c_char * pRequest.imageSize.read()).from_address(int(pRequest.imageData.read()))
+                arr = numpy.fromstring(cbuf, dtype = channelType)
+                arr.shape = (pRequest.imageHeight.read(), pRequest.imageWidth.read(), pRequest.imageChannelCount.read()+1)
+                img = arr[:,:,:3]
 
-exampleHelper.manuallyStartAcquisitionIfNeeded(pDev, fi)
-for i in range(framesToCapture):
-    requestNr = fi.imageRequestWaitFor(10000)
-    if fi.isRequestNrValid(requestNr):
-        pRequest = fi.getRequest(requestNr)
-        if pRequest.isOK:
-            if i%100 == 0:  # statistics every 100 frames
-                print("Info from " + pDev.serial.read() +
-                         ": " + statistics.framesPerSecond.name() + ": " + statistics.framesPerSecond.readS() +
-                         ", " + statistics.errorCount.name() + ": " + statistics.errorCount.readS() +
-                         ", " + statistics.captureTime_s.name() + ": " + statistics.captureTime_s.readS())
-            # For systems with NO mvDisplay library support
-            cbuf = (ctypes.c_char * pRequest.imageSize.read()).from_address(int(pRequest.imageData.read()))
-            channelType = numpy.uint16 if pRequest.imageChannelBitDepth.read() > 8 else numpy.uint8
-            arr = numpy.fromstring(cbuf, dtype = channelType)
-            arr.shape = (pRequest.imageHeight.read(), pRequest.imageWidth.read(), pRequest.imageChannelCount.read()+1)
-            img = arr[:,:,:3]
-            print(img.shape)
+                cv2.imwrite(f"data/{path}/{i}.png", img)
 
-            cv2.imwrite(f"data/{i}.png", img)
+            if pPreviousRequest != None:
+                pPreviousRequest.unlock()
+            pPreviousRequest = pRequest
+            fi.imageRequestSingle()
+        else:
+            print("imageRequestWaitFor failed (" + str(requestNr) + ", " + acquire.ImpactAcquireException.getErrorCodeAsString(requestNr) + ")")
 
-        if pPreviousRequest != None:
-            pPreviousRequest.unlock()
-        pPreviousRequest = pRequest
-        fi.imageRequestSingle()
-    else:
-        print("imageRequestWaitFor failed (" + str(requestNr) + ", " + acquire.ImpactAcquireException.getErrorCodeAsString(requestNr) + ")")
+    fi.acquisitionStop()
+    print(f"Finished...")
 
-exampleHelper.manuallyStopAcquisitionIfNeeded(pDev, fi)
-#exampleHelper.requestENTERFromUser()
-print(f"Finished...")
+    """
+    #### callback
+    from mvIMPACT import acquire
 
-"""
-#### callback
-from mvIMPACT import acquire
+    class MyCallback(acquire.ComponentCallback):
+      def __init__(self, pUserData=None):
+        acquire.ComponentCallback.__init__(self)
+        self.pUserData_ = pUserData
+        self.executeHitCount_ = 0
 
-class MyCallback(acquire.ComponentCallback):
-  def __init__(self, pUserData=None):
-    acquire.ComponentCallback.__init__(self)
-    self.pUserData_ = pUserData
-    self.executeHitCount_ = 0
+      def execute(self, c, pUserData):
+        try:
+          # here you would actually do what is important for you! Please IGNORE the 'pUserData' parameter
+          # coming into this function! Use the one you did provide in you constructor call instead for
+          # whatever is necessary (e.g. cast it to an instance of a class you might want to call). Counting
+          # the number of times this function got called is a silly example only! Remove this in a real world
+          # application!
+          self.executeHitCount_ += 1
+        except Exception as e:
+          print("An exception has been raised by code that is not supposed to raise one: '" + str(e) +
+                "'! If this is NOT handled here the application will crash as this Python exception instance will be returned back into the native code that fired the callback!")
 
-  def execute(self, c, pUserData):
-    try:
-      # here you would actually do what is important for you! Please IGNORE the 'pUserData' parameter
-      # coming into this function! Use the one you did provide in you constructor call instead for
-      # whatever is necessary (e.g. cast it to an instance of a class you might want to call). Counting
-      # the number of times this function got called is a silly example only! Remove this in a real world
-      # application!
-      self.executeHitCount_ += 1
-    except Exception as e:
-      print("An exception has been raised by code that is not supposed to raise one: '" + str(e) +
-            "'! If this is NOT handled here the application will crash as this Python exception instance will be returned back into the native code that fired the callback!")
-
-cb = MyCallback(self) # Here we pass the instance of the class we are currently in to the callback.
-"""
+    cb = MyCallback(self) # Here we pass the instance of the class we are currently in to the callback.
+    """
