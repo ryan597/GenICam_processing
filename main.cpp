@@ -1,6 +1,6 @@
 #include <iostream>
 #include <memory>
-#include "mvIMPACT_CPP/mvIMPACT_acquire.h"
+#include <mvIMPACT_CPP/mvIMPACT_acquire.h>
 
 auto main(int argc, char* argv[]) -> int
 {
