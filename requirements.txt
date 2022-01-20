@@ -1,9 +1,3 @@
-genicam2
-genicam
-h5py
-harvesters
-harvesters-gui
-matplotlib
 numpy
 Pillow
-PyQt5
+opencv-python
