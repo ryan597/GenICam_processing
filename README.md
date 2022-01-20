@@ -22,6 +22,8 @@ This software was developed for (and tested with) the JAI GO 5000c-PGE camera. I
 
 ## 2. Installation
 
+***SWITCHING TO C++ IMPLEMENTATION***
+
 Creating a virtual environment to install the Python dependencies packages is recommended, this can be done with either conda or the python3 venv.
 
 ### Using [`conda`](https://docs.conda.io/en/latest/)
@@ -56,14 +58,27 @@ pip freeze >> requirements.txt
 
 - opencv
 - numpy
-- Pillow
 
 </details>
+
+---
 
 ### mvIMPACT
 
 This software was written using the mvIMPACT_Acquire Python SDK and its supplied GenTL.
 Install the mvIMPACT software for your device using the downloads page [here](http://static.matrix-vision.com/mvIMPACT_Acquire/2.45.0/).
+
+---
+
+### C++
+
+The project is switching to a c++ source code for image acquisition. This is still using the mvIMPACT SDK for which the header files were also installed along with the Python SDK. Ensure that the mvIMPACT directory is included in your path.
+
+```bash
+export PATH=$PATH:/opt/mvIMPACT_Acquire/
+```
+
+The supplied makefile can be used for compilation of the source files and results in an executable `main` file. Call the executable within the `trigger.sh` script with required arguments. Note: The linked library for mvDeviceManager is written for the ARM64 CPU architecture of the Raspberry Pi, if using x86, change "arm64" to "x86_64".
 
 ---
 
