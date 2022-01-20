@@ -21,6 +21,14 @@ def get_channel_bits(pRequest):
     return channelType
 
 
+def print_statistics(pDev, stats):
+    print("Info from " + pDev.serial.read() +
+          ": FPS: " + stats.framesPerSecond.readS() +
+          ", Frame Count: " + stats.frameCount.readS() +
+          ", Error Count: " + stats.errorCount.readS() +
+          ", Capture Time (s): " + stats.captureTime_s.readS())
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("-p", "--path", help="Directory to save images in")
@@ -52,16 +60,11 @@ if __name__ == "__main__":
             if pRequest.isOK:
                 if i == 0:
                     channelType = get_channel_bits(pRequest)
+                if i % 100 == 0:
+                    print_statistics(pDev, stats)
 
-                # MOVE TO STATISTICS FUNCTION, PASSING PDEV AND STATS
-                if i % 100 == 0:  # statistics every 100 frames
-                    print("Info from " + pDev.serial.read() +
-                          ": FPS: " + stats.framesPerSecond.readS() +
-                          ", Frame Count: " + stats.frameCount.readS() +
-                          ", Error Count: " + stats.errorCount.readS() +
-                          ", Capture Time (s): " + stats.captureTime_s.readS())
-
-                cbuf = (ctypes.c_char * pRequest.imageSize.read()).from_address(int(pRequest.imageData.read()))
+                cbuf = (ctypes.c_char * pRequest.imageSize.read()).\
+                    from_address(int(pRequest.imageData.read()))
                 arr = numpy.fromstring(cbuf, dtype=channelType)
                 arr.shape = (pRequest.imageHeight.read(),
                              pRequest.imageWidth.read(),
@@ -76,27 +79,29 @@ if __name__ == "__main__":
             fi.imageRequestSingle()
         else:
             print("imageRequestWaitFor failed (" + str(requestNr) + ", " +
-                  acquire.ImpactAcquireException.getErrorCodeAsString(requestNr) + ")")
+                  acquire.ImpactAcquireException.
+                  getErrorCodeAsString(requestNr) + ")")
 
     fi.acquisitionStop()
     print("Finished...")
 
-    """
-    #### callback
-    from mvIMPACT import acquire
 
-    class MyCallback(acquire.ComponentCallback):
-        def __init__(self, pUserData=None):
-            acquire.ComponentCallback.__init__(self)
-            self.pUserData_ = pUserData
-            self.executeHitCount_ = 0
+"""
+#### callback
+from mvIMPACT import acquire
 
-        def execute(self, c, pUserData):
-            try:
+class MyCallback(acquire.ComponentCallback):
+    def __init__(self, pUserData=None):
+        acquire.ComponentCallback.__init__(self)
+        self.pUserData_ = pUserData
+        self.executeHitCount_ = 0
 
-                self.executeHitCount_ += 1
-            except Exception as e:
-                print("An exception has been raised by code: '" + str(e))
-    # Pass the instance of the class we are currently in to the callback.
-    cb = MyCallback(self)
-    """
+    def execute(self, c, pUserData):
+        try:
+
+            self.executeHitCount_ += 1
+        except Exception as e:
+            print("An exception has been raised by code: '" + str(e))
+# Pass the instance of the class we are currently in to the callback.
+cb = MyCallback(self)
+"""
