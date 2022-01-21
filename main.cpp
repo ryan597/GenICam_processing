@@ -14,7 +14,7 @@ auto main(int argc, char** argv) -> int
         argsHelper();
     }
     // Read config params
-    const unsigned int maxImages = 1000;
+    int maxImages = 1000;
     std::string imageDir = "data/test";
     bool isSingleShot = false;
     int width;
@@ -95,6 +95,6 @@ auto main(int argc, char** argv) -> int
     }
     }
 
-    capture(pDev, isSingleShot, imageDir, maxImages);
+    //capture(pDev, isSingleShot, imageDir, maxImages);
     return 0;
 }
