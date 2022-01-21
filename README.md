@@ -22,57 +22,16 @@ This software was developed for (and tested with) the JAI GO 5000c-PGE camera. I
 
 ## 2. Installation
 
-***SWITCHING TO C++ IMPLEMENTATION***
-
-Creating a virtual environment to install the Python dependencies packages is recommended, this can be done with either conda or the python3 venv.
-
-### Using [`conda`](https://docs.conda.io/en/latest/)
-
-```bash
-conda env create -f environment.yml
-conda activate newproject
-```
-
-#### exporting dependencies to yml file
-
-```bash
-conda env export > environment.yml
-```
-
-### Using [`pip`](https://pypi.org/project/pip/)
-
-```bash
-python3 -m venv newproject
-source newproject/bin/activate
-pip install -r requirements.txt
-```
-
-#### exporting dependencies to a txt file
-
-```bash
-pip freeze >> requirements.txt
-```
-
-<details>
-    <summary>Dependencies list</summary>
-
-- opencv
-- numpy
-
-</details>
-
----
-
 ### mvIMPACT
 
-This software was written using the mvIMPACT_Acquire Python SDK and its supplied GenTL.
-Install the mvIMPACT software for your device using the downloads page [here](http://static.matrix-vision.com/mvIMPACT_Acquire/2.45.0/).
+This software was written using the mvIMPACT_Acquire C++ SDK and its supplied GenTL.
+Install the mvIMPACT software for your device using the downloads page [here](http://static.matrix-vision.com/mvIMPACT_Acquire/2.45.0/) and download for your CPU architecture along with the isntall script.
 
 ---
 
 ### C++
 
-The project is switching to a c++ source code for image acquisition. This is still using the mvIMPACT SDK for which the header files were also installed along with the Python SDK. Ensure that the mvIMPACT directory is included in your path.
+To compile this project it is necessary to have a C++ compiler with at least C++11.  Ensure that the mvIMPACT directory is included in your path.
 
 ```bash
 export PATH=$PATH:/opt/mvIMPACT_Acquire/
@@ -87,13 +46,14 @@ The supplied makefile can be used for compilation of the source files and result
 Running the scripts for triggering of the camera is simple using the command line interface.
 
 ```bash
-conda activate genicam
-python main.py
+imageDirectory="data/test"
+numImgs=1000
+acquisitionMode="Continuous"  # or "SingleFrame"
+pixelFormat="RGBx888Packed"  # or "Mono8"
+./main $numImages $imageDirectory $acquisitionMode $pixelFormat
 ```
 
-See the help function for the arguments that can be passed to the program such as device numbers, max number of images to acquire, time of operation etc.
-
-A simple bash script is also provided for scheduling the operation of the cameras for more regular intervals. This is `triggering.sh` and can be configured using the JSON file `camera_settings.json` in the config folder. Other parameters of the camera can also be changed through this JSON file. ***(NOT YET IMPLEMENTED)***
+A simple bash script is also provided for scheduling the operation of the cameras for more regular intervals. This is `triggering.sh` and settings can be configured within it and passed as arguments to the `main` binary. Other parameters of the camera can also be changed through this JSON file. ***(NOT YET IMPLEMENTED)***
 
 ## [License](LICENSE)
 
@@ -122,4 +82,3 @@ SOFTWARE.
 </details>
 
 ---
-
