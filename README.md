@@ -25,17 +25,17 @@ This software was developed for (and tested with) the JAI GO 5000c-PGE camera. I
 ### mvIMPACT
 
 This software was written using the mvIMPACT_Acquire C++ SDK and its supplied GenTL.
-Install the mvIMPACT software for your device using the downloads page [here](http://static.matrix-vision.com/mvIMPACT_Acquire/2.45.0/) and download for your CPU architecture along with the isntall script.
+Install the mvIMPACT software for your device using the downloads page [here](http://static.matrix-vision.com/mvIMPACT_Acquire/2.45.0/) and download for your CPU architecture along with the install script.
+
+### OpenCV
+
+OpenCV is also used for saving of images captured and may be used for later procesing of the images. It is required to build and compile OpenCV for this application (this may take some time).
 
 ---
 
 ### C++
 
-To compile this project it is necessary to have a C++ compiler with at least C++11.  Ensure that the mvIMPACT directory is included in your path.
-
-```bash
-export PATH=$PATH:/opt/mvIMPACT_Acquire/
-```
+To compile this project it is necessary to have a C++ compiler with at least C++11.
 
 The supplied makefile can be used for compilation of the source files and results in an executable `main` file. Call the executable within the `trigger.sh` script with required arguments. Note: The linked library for mvDeviceManager is written for the ARM64 CPU architecture of the Raspberry Pi, if using x86, change "arm64" to "x86_64".
 
