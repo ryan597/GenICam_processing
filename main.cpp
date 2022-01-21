@@ -1,11 +1,28 @@
-#include <iostream>
-#include <memory>
-#include <mvIMPACT_CPP/mvIMPACT_acquire.h>
+#include "mvIMPACT_CPP/mvIMPACT_acquire.h"
+#include "mvIMPACT_CPP/mvIMPACT_acquire_GenICam.h"
+#include "utils.hpp"
 
-auto main(int argc, char* argv[]) -> int
+auto argsHelper() -> void
 {
-    const int MAX_IMAGES = 1000;
+    std::cout << "Usage: $ ./main MAX_IMAGES IMAGE_DIRECTORY ACQUISITION_MODE";
+}
 
+auto main(int argc, char** argv) -> int
+{
+    if (argc < 1)
+    {
+        argsHelper();
+    }
+    // Read config params
+    const unsigned int maxImages = 1000;
+    std::string imageDir = "data/test";
+    bool isSingleShot = false;
+    int width;
+    int height;
+    std::string pixelFormat;
+    std::string acquisitionMode;
+
+    // Device initialization
     mvIMPACT::acquire::DeviceManager devMgr;
     if( devMgr.deviceCount() == 0 )
     {
@@ -20,6 +37,7 @@ auto main(int argc, char* argv[]) -> int
     try
     {
         pDev->open();
+        std::cout << "Using interface layout " << pDev->interfaceLayout.readS() << "\n";
     }
     catch(mvIMPACT::acquire::ImpactAcquireException& e )
     {
@@ -30,20 +48,53 @@ auto main(int argc, char* argv[]) -> int
         return 0;
     }
 
-    mvIMPACT::acquire::FunctionInterface fi(pDev);
-    fi.acquisitionStart();
-    for(int i = 0; i < MAX_IMAGES; i++)
+    switch(pDev->interfaceLayout.read())
     {
-        auto requestNr = fi.imageRequestWaitFor(10000);
-        auto pRequest = fi.getRequest(requestNr);
-        std::cout << "Image captured: "
-                  << pRequest->imageOffsetX.read()
-                  << "x" << pRequest->imageOffsetY.read()
-                  << "@" << pRequest->imageWidth.read()
-                  << "x" << pRequest->imageHeight.read()
-                  << "\n";
+    case mvIMPACT::acquire::TDeviceInterfaceLayout::dilGenICam:
+    {
+        mvIMPACT::acquire::GenICam::ImageFormatControl ifc(pDev);
+        mvIMPACT::acquire::GenICam::AcquisitionControl ac(pDev);
+        if ( width > 0 )
+        {
+            ifc.width.write(width);
+        }
+        if (height > 0)
+        {
+            ifc.height.write(height);
+        }
+        if (!pixelFormat.empty())
+        {
+            ifc.pixelFormat.writeS(pixelFormat);
+        }
+        if (!acquisitionMode.empty())
+        {
+            ac.acquisitionMode.writeS(acquisitionMode);
+        }
+        acquisitionMode = ac.acquisitionMode.readS();
+        std::cout << "Device set to: " << ifc.pixelFormat.readS() << " " << ifc.width.read() << "x" << ifc.height.read() << "\n";
+        break;
     }
-    fi.acquisitionStop();
-    std::cout << "Finished...\n";
+    case mvIMPACT::acquire::TDeviceInterfaceLayout::dilDeviceSpecific:
+    {
+        CameraSettingsBase cs(pDev);
+        if(width > 0)
+        {
+            cs.aoiWidth.write(width);
+        }
+        if(height > 0)
+        {
+            cs.aoiHeight.write(height);
+        }
+        std::cout << "Device set to: " << cs.aoiWidth.read() << "x" << cs.aoiHeight.read() << "\n";
+        break;
+    }
+    default:
+    {
+        std::cout << "Interface layout not recognised...";
+        return 2;
+    }
+    }
+
+    capture(pDev, isSingleShot, imageDir, maxImages);
     return 0;
 }
