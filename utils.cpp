@@ -66,7 +66,7 @@ auto print_statistics(mvIMPACT::acquire::Device* pDev, mvIMPACT::acquire::Statis
 }
 
 
-auto capture(mvIMPACT::acquire::Device* pDev, bool isSingleShot, std::string imageDir, int maxImages) -> void
+auto capture(mvIMPACT::acquire::Device* pDev, bool isSingleShot, std::string imageDir, int numImages) -> void
 {
     mvIMPACT::acquire::Statistics stats(pDev);
     mvIMPACT::acquire::FunctionInterface fi(pDev);
@@ -143,7 +143,7 @@ auto capture(mvIMPACT::acquire::Device* pDev, bool isSingleShot, std::string ima
             }
         }
         // Termination condition
-        if (isSingleShot || count >= maxImages)
+        if (isSingleShot || count >= numImages)
         {
             isTerminated = true;
         }

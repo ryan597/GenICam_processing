@@ -16,7 +16,7 @@ auto main(int argc, char** argv) -> int
         return 1;
     }
     // Read config params
-    int maxImages = std::atoi(argv[1]);
+    int numImages = std::atoi(argv[1]);
     std::string imageDir = argv[2];
     std::string acquisitionMode = argv[3];
     bool isSingleShot = (acquisitionMode == "SingleFrame");
@@ -97,6 +97,6 @@ auto main(int argc, char** argv) -> int
     }
     }
 
-    capture(pDev, isSingleShot, imageDir, maxImages);
+    capture(pDev, isSingleShot, imageDir, numImages);
     return 0;
 }
