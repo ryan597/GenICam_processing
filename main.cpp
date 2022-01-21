@@ -4,23 +4,25 @@
 
 auto argsHelper() -> void
 {
-    std::cout << "Usage: $ ./main MAX_IMAGES IMAGE_DIRECTORY ACQUISITION_MODE";
+    std::cout << "Usage: $ ./main MAX_IMAGES IMAGE_DIRECTORY ACQUISITION_MODE PIXEL_FORMAT\n"
+              << "Example: ./main 1000 data/test Continuous Mono8\n";
 }
 
 auto main(int argc, char** argv) -> int
 {
-    if (argc < 1)
+    if (argc < 4)
     {
         argsHelper();
+        return 1;
     }
     // Read config params
-    int maxImages = 1000;
-    std::string imageDir = "data/test";
-    bool isSingleShot = false;
-    int width;
+    int maxImages = std::atoi(argv[1]);
+    std::string imageDir = argv[2];
+    std::string acquisitionMode = argv[3];
+    bool isSingleShot = (acquisitionMode == "SingleFrame");
+    std::string pixelFormat = argv[4];
+    int width;  // For reducing the AOI and thus resolution
     int height;
-    std::string pixelFormat;
-    std::string acquisitionMode;
 
     // Device initialization
     mvIMPACT::acquire::DeviceManager devMgr;
@@ -95,6 +97,6 @@ auto main(int argc, char** argv) -> int
     }
     }
 
-    //capture(pDev, isSingleShot, imageDir, maxImages);
+    capture(pDev, isSingleShot, imageDir, maxImages);
     return 0;
 }

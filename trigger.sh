@@ -1,10 +1,10 @@
 #!/bin/bash
 
-Date=date +'%Y-%m-%d_%H-%M'
-NumImgs=100
+imageDir=date +'%Y-%m-%d_%H-%M'
+numImgs=100
+acquisitionMode=Continuous  # SingleFrame
+pixelFormat=RGBx888Packed  # Mono8
 
-mkdir data/$Date
+mkdir data/$imageDir
 
-conda activate genicam
-
-python main.py -p $Date -n $NumImgs |& tee logs/logging.txt 
+./main $numImages $imageDir $acquisitionMode $pixelFormat |& tee logs/logging.txt
