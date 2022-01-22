@@ -8,17 +8,17 @@ auto argsHelper() -> void
 
 auto main(int argc, char** argv) -> int
 {
-    if (argc < 4)
+    if (argc < 2)
     {
         argsHelper();
         return 1;
     }
     // Read config params
     int numImages = std::atoi(argv[1]);
-    std::string imageDir = argv[2];
-    std::string acquisitionMode = argv[3];
+    std::string imageDir = (argc > 2) ? argv[2] : "data";
+    std::string acquisitionMode = (argc > 3) ? argv[3] : "Continuous";
     bool isSingleShot = (acquisitionMode == "SingleFrame");
-    std::string pixelFormat = argv[4];
+    std::string pixelFormat = (argc > 4) ? argv[4] : "";
     int width{};  // For reducing the AOI and thus resolution
     int height{};
 
