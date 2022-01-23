@@ -1,5 +1,3 @@
-#include "mvIMPACT_CPP/mvIMPACT_acquire.h"
-#include "mvIMPACT_CPP/mvIMPACT_acquire_GenICam.h"
 #include "utils.hpp"
 
 auto argsHelper() -> void
@@ -21,8 +19,8 @@ auto main(int argc, char** argv) -> int
     std::string acquisitionMode = argv[3];
     bool isSingleShot = (acquisitionMode == "SingleFrame");
     std::string pixelFormat = argv[4];
-    int width;  // For reducing the AOI and thus resolution
-    int height;
+    int width{};  // For reducing the AOI and thus resolution
+    int height{};
 
     // Device initialization
     mvIMPACT::acquire::DeviceManager devMgr;
