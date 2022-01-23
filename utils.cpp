@@ -3,7 +3,7 @@
 
 auto getPixelFormat(mvIMPACT::acquire::Request* pRequest) -> int
 {
-    int openCVDataType;
+    int openCVDataType {};
     switch(pRequest->imagePixelFormat.read())
     {
         case ibpfMono8:
@@ -48,7 +48,7 @@ auto getPixelFormat(mvIMPACT::acquire::Request* pRequest) -> int
         case ibpfYUV444Planar:
         case ibpfYUV411_UYYVYY_Packed:
             std::cout << "ERROR! Don't know how to render this pixel format (" << pRequest->imagePixelFormat.readS() << ") in OpenCV! Select another one e.g. by writing to mvIMPACT::acquire::ImageDestination::pixelFormat!\n";
-            exit( 42 );
+            std::exit( 42 );
             break;
     }
     return openCVDataType;

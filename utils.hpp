@@ -5,8 +5,8 @@
 #include "mvIMPACT_CPP/mvIMPACT_acquire.h"
 #include "mvIMPACT_CPP/mvIMPACT_acquire_GenICam.h"
 
-#include <opencv2/core/core.hpp>
-#include <opencv2/imgcodecs.hpp>
+#include  "opencv2/core/core.hpp"
+#include "opencv2/imgcodecs.hpp"
 
 
 auto getPixelFormat(mvIMPACT::acquire::Request* pRequest) -> int;
