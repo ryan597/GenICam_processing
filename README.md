@@ -27,10 +27,6 @@ This software was developed for (and tested with) the JAI GO 5000c-PGE camera. I
 This software was written using the mvIMPACT_Acquire C++ SDK and its supplied GenTL.
 Install the mvIMPACT software for your device using the downloads page [here](http://static.matrix-vision.com/mvIMPACT_Acquire/2.45.0/) and download for your CPU architecture along with the install script.
 
-### OpenCV
-
-OpenCV is also used for saving of images captured and may be used for later procesing of the images. It is required to build and compile OpenCV for this application (this may take some time).
-
 ---
 
 ### C++
