@@ -132,7 +132,7 @@ auto capture(mvIMPACT::acquire::Device* pDev, bool isSingleShot, std::string ima
             cv::Mat image(cv::Size(pRequest->imageWidth.read(), pRequest->imageHeight.read()), dataType, pRequest->imageData.read()); //pRequest->imageLinePitch.read());
             std::string padded_count = std::to_string(count);
             padded_count.insert(0, 8 - padded_count.length(), '0');
-
+            imshow("Window", image);
             imwrite(imageDir + "/" + padded_count + ".png", image);
 
             // Unlock the buffer and send request back to function interface
