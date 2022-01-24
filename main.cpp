@@ -26,8 +26,8 @@ auto main(int argc, char** argv) -> int
     mvIMPACT::acquire::DeviceManager devMgr;
     if( devMgr.deviceCount() == 0 )
     {
-        std::cout << "No device found! Unable to continue!\nPress enter to exit";
-        char ch = std::getchar();
+        std::cout << "No device found! Unable to continue!\n";
+        //char ch = std::getchar();
         return 1;
     }
 
@@ -42,9 +42,8 @@ auto main(int argc, char** argv) -> int
     catch(mvIMPACT::acquire::ImpactAcquireException& e )
     {
         // this e.g. might happen if the same device is already opened in another process...
-        std::cout << "An error occurred while opening the device)\n"
-                  << "Press any key to end the application...\n";
-        char ch = getchar();
+        std::cout << "An error occurred while opening the device)\n";
+        //char ch = getchar();
         return 0;
     }
 
