@@ -1,6 +1,6 @@
 #include "utils.hpp"
 
-
+/*
 auto getPixelFormat(mvIMPACT::acquire::Request* pRequest) -> int
 {
     int openCVDataType {};
@@ -55,7 +55,7 @@ auto getPixelFormat(mvIMPACT::acquire::Request* pRequest) -> int
     }
     return openCVDataType;
 }
-
+*/
 
 auto print_statistics(mvIMPACT::acquire::Device* pDev, mvIMPACT::acquire::Statistics stats, unsigned int count) -> void
 {
