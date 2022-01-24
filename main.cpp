@@ -36,6 +36,7 @@ auto main(int argc, char** argv) -> int
     mvIMPACT::acquire::Device* pDev = devMgr[0];
     try
     {
+        pDev->defaultRequestCount.write(50);
         pDev->open();
         std::cout << "Using interface layout " << pDev->interfaceLayout.readS() << "\n";
     }
