@@ -7,9 +7,9 @@
 #include "mvIMPACT_CPP/mvIMPACT_acquire_GenICam.h"
 
 //#include "opencv2/opencv.hpp"
-#include "opencv2/core/core.hpp"
-#include "opencv2/imgcodecs.hpp"
-#include "opencv2/highgui.hpp"
+//#include "opencv2/core/core.hpp"
+//#include "opencv2/imgcodecs.hpp"
+//#include "opencv2/highgui.hpp"
 
 auto getPixelFormat(mvIMPACT::acquire::Request* pRequest) -> int;
 auto print_statistics(mvIMPACT::acquire::Device* pDev, mvIMPACT::acquire::Statistics stats, unsigned int count) -> void;

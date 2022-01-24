@@ -125,13 +125,13 @@ auto capture(mvIMPACT::acquire::Device* pDev, bool isSingleShot, std::string ima
                     print_statistics(pDev, stats, count);
                 }
                 // Write image to disk
-                int dataType = getPixelFormat(pRequest);
-                cv::Mat image(cv::Size(pRequest->imageWidth.read(), pRequest->imageHeight.read()), dataType, pRequest->imageData.read());
+                //int dataType = getPixelFormat(pRequest);
+                //cv::Mat image(cv::Size(pRequest->imageWidth.read(), pRequest->imageHeight.read()), dataType, pRequest->imageData.read());
                 std::string padded_count = std::to_string(count);
                 padded_count.insert(0, 8 - padded_count.length(), '0');
-                imshow("Window", image);
-                imwrite(imageDir + "/" + padded_count + ".png", image);
-                cv::waitKey(5);
+                pRequest->save(imageDir + "/" + padded_count + ".png", mvIMPACT::acquire::TImageFileFormat::iffPNG);
+                //imwrite(imageDir + "/" + padded_count + ".png", image);
+                //cv::waitKey(5);
             }
             else
             {
