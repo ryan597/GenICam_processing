@@ -107,16 +107,18 @@ auto capture(mvIMPACT::acquire::Device* pDev, bool isSingleShot, std::string ima
     {
         std::cout << "Maximum request count: " << ss.requestCount.getMaxValue() << "\n";
     }
-    const unsigned int timeout_ms = 10000;
+    const unsigned int timeout_ms = 1000;
     unsigned int count = 0;
     bool isTerminated = false;
     int requestNr{};
+    mvIMPACT::acquire::Request* pRequest = nullptr;
+    mvIMPACT::acquire::Request* pPreviousRequest = nullptr;
     while (!isTerminated)
     {
         requestNr = fi.imageRequestWaitFor(timeout_ms);
         if (fi.isRequestNrValid(requestNr))
         {
-            mvIMPACT::acquire::Request* pRequest = fi.getRequest(requestNr);
+            pRequest = fi.getRequest(requestNr);
             if (pRequest->isOK())
             {
                 count++;
@@ -139,7 +141,11 @@ auto capture(mvIMPACT::acquire::Device* pDev, bool isSingleShot, std::string ima
             }
 
             // Unlock the buffer and send request back to function interface
-            pRequest->unlock();
+            if (pPreviousRequest)
+            {
+                pPreviousRequest->unlock();
+            }
+            pPreviousRequest = pRequest;
             if (!isSingleShot)
             {
                 fi.imageRequestSingle();
