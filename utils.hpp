@@ -13,4 +13,4 @@
 
 auto getPixelFormat(mvIMPACT::acquire::Request* pRequest) -> int;
 auto print_statistics(mvIMPACT::acquire::Device* pDev, mvIMPACT::acquire::Statistics stats, unsigned int count) -> void;
-auto capture(mvIMPACT::acquire::Device* pDev, bool isSingleShot, std::string imageDir, int numImages) -> void;
+auto capture(mvIMPACT::acquire::Device* pDev, bool isSingleShot, std::string imageDir, const unsigned int numImages) -> void;

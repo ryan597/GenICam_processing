@@ -14,7 +14,7 @@ auto main(int argc, char** argv) -> int
         return 1;
     }
     // Read config params
-    int numImages = std::atoi(argv[1]);
+    const unsigned int numImages = std::atoi(argv[1]);
     std::string imageDir = (argc > 2) ? argv[2] : "data";
     std::string acquisitionMode = (argc > 3) ? argv[3] : "Continuous";
     bool isSingleShot = (acquisitionMode == "SingleFrame");
@@ -52,6 +52,8 @@ auto main(int argc, char** argv) -> int
     {
     case mvIMPACT::acquire::TDeviceInterfaceLayout::dilGenICam:
     {
+        //mvIMPACT::acquire::GenICam::GenTLDriverConfigurator driverConfigurator;
+        //driverConfigurator.createProducerConfiguration( ".cti" );
         mvIMPACT::acquire::GenICam::ImageFormatControl ifc(pDev);
         mvIMPACT::acquire::GenICam::AcquisitionControl ac(pDev);
         if ( width > 0 )

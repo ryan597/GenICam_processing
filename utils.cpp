@@ -66,7 +66,7 @@ auto print_statistics(mvIMPACT::acquire::Device* pDev, mvIMPACT::acquire::Statis
 }
 
 
-auto capture(mvIMPACT::acquire::Device* pDev, bool isSingleShot, std::string imageDir, int numImages) -> void
+auto capture(mvIMPACT::acquire::Device* pDev, bool isSingleShot, std::string imageDir, const unsigned int numImages) -> void
 {
     mvIMPACT::acquire::Statistics stats(pDev);
     mvIMPACT::acquire::FunctionInterface fi(pDev);
