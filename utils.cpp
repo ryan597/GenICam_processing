@@ -50,6 +50,8 @@ auto getPixelFormat(mvIMPACT::acquire::Request* pRequest) -> int
             std::cout << "ERROR! Don't know how to render this pixel format (" << pRequest->imagePixelFormat.readS() << ") in OpenCV! Select another one e.g. by writing to mvIMPACT::acquire::ImageDestination::pixelFormat!\n";
             std::exit( 42 );
             break;
+        default:
+            break;
     }
     return openCVDataType;
 }
