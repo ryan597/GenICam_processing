@@ -7,4 +7,4 @@ pixelFormat=RGBx888Packed  # Mono8
 
 mkdir data/$imageDir
 
-./main $numImages $imageDir $acquisitionMode $pixelFormat |& tee logs/logging.txt
+build/main $numImages $imageDir $acquisitionMode $pixelFormat |& tee logs/logging.txt

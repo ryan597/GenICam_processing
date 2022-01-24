@@ -37,7 +37,16 @@ OpenCV is also used for saving of images captured and may be used for later proc
 
 To compile this project it is necessary to have a C++ compiler with at least C++11.
 
-The supplied makefile can be used for compilation of the source files and results in an executable `main` file. Call the executable within the `trigger.sh` script with required arguments. Note: The linked library for mvDeviceManager is written for the ARM64 CPU architecture of the Raspberry Pi, if using x86, change "arm64" to "x86_64".
+The supplied `CMakeLists` can be used for compilation of the source files and results in an executable `main` file. Call the executable within the `trigger.sh` script with required arguments.
+
+```bash
+mkdir build
+cd build
+cmake ..
+cmake --build .
+```
+
+Note that the executable is now within the build subdirectory.
 
 ---
 
