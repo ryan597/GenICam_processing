@@ -56,10 +56,11 @@ auto main(int argc, char** argv) -> int
     while (numImages - count > 0)
     {
         // Triggering of cameras
-        while (stream->Statistics(Cvb::StreamInfo::NumBuffersPending) < buffers) {
+        while (stream->Statistics(Cvb::StreamInfo::NumBuffersPending) < buffers) 
+        {
             triggerSoftware->Execute();
             std::cout << stream->Statistics(Cvb::StreamInfo::NumBuffersPending) << "\n";
-        //}
+        }
 
         //std::cout << "processing frames\n";
         // Now save images and free up the buffers again
