@@ -11,6 +11,7 @@ find_package(CVB REQUIRED)
 
 add_executable(main 
 	cvbmain.cpp
+    cvbconfig.cpp
 )
 
 target_link_libraries(main 

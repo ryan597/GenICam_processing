@@ -1,6 +1,4 @@
-#include <iostream>
-
-#include <cvb/device_factory.hpp>
+#include "cvbconfig.hpp"
 
 /*
  * Return the DataStream Node Map from passed device pointer

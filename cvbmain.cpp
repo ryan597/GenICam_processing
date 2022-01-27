@@ -6,7 +6,7 @@
 //#include <cvb/utilities/system_info.hpp>
 #include <cvb/driver/stream.hpp>
 
-#include "cvbconfig.cpp"
+#include "cvbconfig.hpp"
 
 auto argsHelper() -> void
 {
