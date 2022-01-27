@@ -1,11 +1,12 @@
 #include <iostream>
 #include <string>
 
-
+//#include <cvb/image.hpp>
 #include <cvb/device_factory.hpp>
-#include <cvb/utilities/system_info.hpp>
+//#include <cvb/utilities/system_info.hpp>
 #include <cvb/driver/stream.hpp>
 
+#include "cvbconfig.cpp"
 
 auto argsHelper() -> void
 {
@@ -16,25 +17,42 @@ auto argsHelper() -> void
 
 auto main(int argc, char** argv) -> int
 {
+    if (argc < 2)
+    {
+        argsHelper();
+        return 1;
+    }
 
     // Read config params
-    const unsigned int numImages = std::atoi(argv[1]);
+    const int numImages = std::atoi(argv[1]);
     std::string imageDir = (argc > 2) ? argv[2] : "data";
-    //std::string acquisitionMode = (argc > 3) ? argv[3] : "Continuous";
-    //bool isSingleShot = (acquisitionMode == "SingleFrame");
-    //std::string pixelFormat = (argc > 4) ? argv[4] : "";
-    int width{};  // For reducing the AOI and thus resolution
-    int height{};
+    //int width{};  // For reducing the AOI and thus resolution
+    //int height{};
 
-    auto path = InstallPath();
-    path += CVB_LIT("drivers/GenICam.vin");
+    std::cout << "Initialising device...\n";
 
     // open a device
-    auto device = DeviceFactory::Open(path);
+    auto deviceList = Cvb::DeviceFactory::Discover(Cvb::DiscoverFlags::IgnoreVins);
+    if (deviceList.empty())
+    {
+        std::cout << "No device available... Program exit.\n";
+        return 1;
+    }
 
+    auto device = Cvb::DeviceFactory::Open(deviceList[0].AccessToken());
+    std::cout << "Device open\n";
+    if (device->StreamCount() == 0)
+    {
+        std::cout << "No stream available... Program exit.\n";
+        return 1;
+    }
+
+    EnablePacketResend(device);
+    DiscardCorruptFrames(device);
     // get the first stream of the device
     auto stream = device->Stream();
     stream->Start();
+    std::cout << "Acquisition started...\n";
 
     unsigned int count = 0;
 
@@ -53,5 +71,14 @@ auto main(int argc, char** argv) -> int
         std::string imagePath = imageDir + padded_count + ".png";
 
         waitResult.Image->Save(imagePath);
+
+        if (count % 100 == 0)
+        {
+            std::cout << "Frames " + std::to_string(count) + "\n";
+        }
     }
+
+    stream->Stop();
+    std::cout << "Finished.\n";
 }
+
