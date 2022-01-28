@@ -3,7 +3,7 @@
 /*
  * Return the DataStream Node Map from passed device pointer
  */
-Cvb::NodeMapPtr DataStreamNodeMap(Cvb::DevicePtr dev)
+auto DataStreamNodeMap(Cvb::DevicePtr dev) -> Cvb::NodeMapPtr
 {
     //auto nodeMaps = dev->NodeMaps();  // All node maps
     return dev->NodeMap("TLDataStream");
