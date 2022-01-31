@@ -7,6 +7,7 @@
 #include <cvb/driver/stream.hpp>
 
 #include "cvbconfig.hpp"
+#include "videoprocessing.cpp"
 
 auto argsHelper() -> void
 {
@@ -32,7 +33,7 @@ auto main(int argc, char** argv) -> int
     std::cout << "Initialising device...\n";
 
     // open a device
-    auto deviceList = Cvb::DeviceFactory::Discover(Cvb::DiscoverFlags::IgnoreVins);
+    auto deviceList = Cvb::DeviceFactory::Discover(Cvb::DiscoverFlags::IgnoreVins, std::chrono::seconds(5));
     if (deviceList.empty())
     {
         std::cout << "No device available... Program exit.\n";
@@ -56,6 +57,9 @@ auto main(int argc, char** argv) -> int
 
     unsigned int count = 0;
 
+    VideoProcessor recorder;
+    recorder.setOutput("/data/test/vid.avi");
+
     for (int i = 0; i < numImages; i++)
     {
         auto waitResult = stream->WaitFor(std::chrono::seconds(10));
@@ -70,11 +74,14 @@ auto main(int argc, char** argv) -> int
 
         std::string imagePath = imageDir + padded_count + ".bmp";
 
-        waitResult.Image->Save(imagePath);
+        //waitResult.Image->Save(imagePath);
+        auto pImg = cv::Mat(waitResult.Image.height(), waitResult.Image.width(), CV_8UC3, waitResult.ImagePlane.Planes());
+        recorder.writeFrame(pImg);
 
         if (count % 100 == 0)
         {
             std::cout << "Frames " + std::to_string(count) + "\n";
+
         }
     }
 
