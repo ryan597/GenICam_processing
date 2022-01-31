@@ -9,7 +9,7 @@
 #include <cvb/driver/stream.hpp>
 
 #include "cvbconfig.hpp"
-#include "videoprocessing.cpp"
+//#include "videoprocessing.cpp"
 
 
 auto argsHelper() -> void
@@ -76,36 +76,37 @@ auto main(int argc, char** argv) -> int
 
     stream->Start();
     std::cout << "Acquisition started...\n";
+    int count = 0;
 
-    // Triggering of cameras
-    while (stream->Statistics(Cvb::StreamInfo::NumBuffersPending) < buffers) {
-        triggerSoftware->Execute();
-    }
-
-    // Keep track of total images
-    unsigned int count = 0;
-
-    std::cout << "processing frames\n";
-
-    // Now save images and free up the RAM
-    while (stream->Statistics(Cvb::StreamInfo::NumBuffersPending) > 0)
+    while (numImages - count > 0)
     {
-        std::string padded_count = std::to_string(count);
-        padded_count.insert(0, 8 - padded_count.length(), '0');
-        std::string imagePath = imageDir + padded_count + ".bmp";
-        auto waitResult = stream->WaitFor(std::chrono::seconds(2));
-        if (waitResult.Status == Cvb::WaitStatus::Timeout)
-        {
-            throw std::runtime_error("acquisition timeout");
+        // Triggering of cameras
+        while (stream->Statistics(Cvb::StreamInfo::NumBuffersPending) < buffers) {
+            triggerSoftware->Execute();
         }
-        waitResult.Image->Save(imagePath);
-        std::cout << "Frames processed: " + std::to_string(count) + "\n";
-        count++;
+
+        std::cout << "processing frames\n";
+        std::string imagePath = "";
+        std::string paddedCount = "";
+        // Now save images and free up the buffers again
+        while (stream->Statistics(Cvb::StreamInfo::NumBuffersPending) > 0)
+        {
+            paddedCount = std::to_string(count);
+            paddedCount.insert(0, 8 - paddedCount.length(), '0');
+            imagePath = imageDir + paddedCount + ".bmp";
+            auto waitResult = stream->WaitFor(std::chrono::seconds(2));
+            if (waitResult.Status == Cvb::WaitStatus::Timeout)
+            {
+                throw std::runtime_error("acquisition timeout");
+            }
+            waitResult.Image->Save(imagePath);
+            std::cout << "Frames processed: " + std::to_string(count) + "\n";
+            count++;
+        }
     }
 
-
-    VideoProcessor recorder;
-    recorder.setOutput("/data/test/vid.avi");
+    //VideoProcessor recorder;
+    //recorder.setOutput("/data/test/vid.avi");
     //auto pImg = cv::Mat(waitResult.Image->Height(), waitResult.Image->Width(), CV_8UC3, waitResult.ImagePlane.Planes());
     //recorder.writeFrame(pImg);
 
