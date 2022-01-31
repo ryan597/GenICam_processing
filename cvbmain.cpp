@@ -44,7 +44,7 @@ auto main(int argc, char** argv) -> int
     if (device->StreamCount() == 0)
     {
         std::cout << "No stream available... Program exit.\n";
-        return 1;
+        //return 1;
     }
 
     EnablePacketResend(device);
@@ -68,7 +68,7 @@ auto main(int argc, char** argv) -> int
         std::string padded_count = std::to_string(count);
         padded_count.insert(0, 8 - padded_count.length(), '0');
 
-        std::string imagePath = imageDir + padded_count + ".png";
+        std::string imagePath = imageDir + padded_count + ".bmp";
 
         waitResult.Image->Save(imagePath);
 
