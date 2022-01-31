@@ -81,6 +81,7 @@ auto main(int argc, char** argv) -> int
         if (count % 100 == 0)
         {
             std::cout << "Frames " + std::to_string(count) + "\n";
+
         }
     }
 
