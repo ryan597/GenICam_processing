@@ -57,19 +57,25 @@ auto main(int argc, char** argv) -> int
     std::cout << "Initialising device...\n";
     auto device = findDevice();
 
+    // GenICam Settings
     // Set to software trigger to fill buffers
     auto deviceNodeMap = device->NodeMap(CVB_LIT("Device"));
-    auto triggerMode = deviceNodeMap->Node<Cvb::EnumerationNode>("TriggerMode");
-    auto triggerSource = deviceNodeMap->Node<Cvb::EnumerationNode>("TriggerSource");
-    auto triggerSoftware = deviceNodeMap->Node<Cvb::CommandNode>("TriggerSoftware");
+    auto triggerModeNode = deviceNodeMap->Node<Cvb::EnumerationNode>("TriggerMode");
+    auto triggerSourceNode = deviceNodeMap->Node<Cvb::EnumerationNode>("TriggerSource");
+    auto triggerSoftwareNode = deviceNodeMap->Node<Cvb::CommandNode>("TriggerSoftware");
+    auto acquisitionFramerateNode = deviceNodeMap->Node<Cvb::FloatNode>("AcquisitionFrameRate");
+    auto widthNode = deviceNodeMap->Node<Cvb::FloatNode>("Width");
+    auto heightNode = deviceNodeMap->Node<Cvb::FloatNode>("Height");
+    //auto offsetXNode = deviceNodeMap->Node<Cvb::FloatNode>("OffsetX");
+    //auto offsetYNode = deviceNodeMap->Node<Cvb::FloatNode>("OffsetY");
 
-    triggerMode->SetValue("Off");
-    //triggerSource->SetValue("Software");
+    triggerModeNode->SetValue("Off");
+    triggerSourceNode->SetValue("Software");
+    acquisitionFramerateNode->SetValue(20.0);
 
     EnablePacketResend(device);
     DiscardCorruptFrames(device);
 
-    // get the first stream of the device
     auto stream = device->Stream();
     // Increase buffer count, all images kept in RAM and written to memory after
     //stream->RingBuffer()->ChangeCount(buffers, Cvb::DeviceUpdateMode::UpdateDeviceImage);
@@ -85,7 +91,7 @@ auto main(int argc, char** argv) -> int
     {
         // Triggering of cameras
         //while (stream->Statistics(Cvb::StreamInfo::NumBuffersPending) < buffers) {
-        //    triggerSoftware->Execute();
+        //    triggerSoftwareNode->Execute();
         //    std::cout << stream->Statistics(Cvb::StreamInfo::NumBuffersPending) << "\n";
         //}
 
