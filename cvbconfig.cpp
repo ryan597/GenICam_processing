@@ -1,5 +1,8 @@
 #include "cvbconfig.hpp"
 
+// Change framerate and resolutions plus other parameters.
+
+
 /*
  * Return the DataStream Node Map from passed device pointer
  */

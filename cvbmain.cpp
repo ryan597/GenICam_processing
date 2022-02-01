@@ -77,6 +77,8 @@ auto main(int argc, char** argv) -> int
     stream->Start();
     std::cout << "Acquisition started...\n";
     int count = 0;
+    std::string imagePath = "";
+    std::string paddedCount = "";
 
     while (numImages - count > 0)
     {
@@ -86,8 +88,6 @@ auto main(int argc, char** argv) -> int
         }
 
         std::cout << "processing frames\n";
-        std::string imagePath = "";
-        std::string paddedCount = "";
         // Now save images and free up the buffers again
         while (stream->Statistics(Cvb::StreamInfo::NumBuffersPending) > 0)
         {
