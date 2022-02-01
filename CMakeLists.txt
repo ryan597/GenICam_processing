@@ -7,15 +7,17 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall")
 set(CVB_DIR "/opt/cvb")
 set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH}" "${CVB_DIR}/cmake")
 
+include_directories(Include)
+
 find_package(CVB REQUIRED)
 
-add_executable(main 
+add_executable(main
 	cvbmain.cpp
     cvbconfig.cpp
 )
 
-target_link_libraries(main 
-	CVB::CVCDriver 
-	CVB::CVCUtilities 
+target_link_libraries(main
+	CVB::CVCDriver
+	CVB::CVCUtilities
 	CVB::CVGenApi
 )

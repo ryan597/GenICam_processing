@@ -63,8 +63,8 @@ auto main(int argc, char** argv) -> int
     auto triggerSource = deviceNodeMap->Node<Cvb::EnumerationNode>("TriggerSource");
     auto triggerSoftware = deviceNodeMap->Node<Cvb::CommandNode>("TriggerSoftware");
 
-    triggerMode->SetValue("On");
-    triggerSource->SetValue("Software");
+    triggerMode->SetValue("Off");
+    //triggerSource->SetValue("Software");
 
     EnablePacketResend(device);
     DiscardCorruptFrames(device);
@@ -72,20 +72,22 @@ auto main(int argc, char** argv) -> int
     // get the first stream of the device
     auto stream = device->Stream();
     // Increase buffer count, all images kept in RAM and written to memory after
-    stream->RingBuffer()->ChangeCount(buffers, Cvb::DeviceUpdateMode::UpdateDeviceImage);
+    //stream->RingBuffer()->ChangeCount(buffers, Cvb::DeviceUpdateMode::UpdateDeviceImage);
 
     stream->Start();
     std::cout << "Acquisition started...\n";
     int count = 0;
 
+    std::cout.precision(20);
     while (numImages - count > 0)
     {
         // Triggering of cameras
-        while (stream->Statistics(Cvb::StreamInfo::NumBuffersPending) < buffers) {
-            triggerSoftware->Execute();
-        }
+        //while (stream->Statistics(Cvb::StreamInfo::NumBuffersPending) < buffers) {
+        //    triggerSoftware->Execute();
+        //    std::cout << stream->Statistics(Cvb::StreamInfo::NumBuffersPending) << "\n";
+        //}
 
-        std::cout << "processing frames\n";
+        //std::cout << "processing frames\n";
         std::string imagePath = "";
         std::string paddedCount = "";
         // Now save images and free up the buffers again
@@ -95,12 +97,14 @@ auto main(int argc, char** argv) -> int
             paddedCount.insert(0, 8 - paddedCount.length(), '0');
             imagePath = imageDir + paddedCount + ".bmp";
             auto waitResult = stream->WaitFor(std::chrono::seconds(2));
+            auto acquisitionTime = waitResult.Image->RawTimestamp() / 62500000;
             if (waitResult.Status == Cvb::WaitStatus::Timeout)
             {
                 throw std::runtime_error("acquisition timeout");
             }
-            waitResult.Image->Save(imagePath);
-            std::cout << "Frames processed: " + std::to_string(count) + "\n";
+            //waitResult.Image->Save(imagePath);
+            std::cout << "Frames: " << std::to_string(count) << "\t|| "
+                      << "Captured at " << acquisitionTime << " seconds\n";
             count++;
         }
     }
