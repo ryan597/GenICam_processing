@@ -11,6 +11,8 @@
 #include "cameraconfig.hpp"
 //#include "videoprocessing.cpp"
 
+// Camera internal tick frequency per second
+#define DEVICE_TICK_FREQUENCY 62500000
 
 auto argsHelper() -> void
 {
@@ -67,7 +69,7 @@ auto main(int argc, char** argv) -> int
             paddedCount.insert(0, 8 - paddedCount.length(), '0');
             imagePath = imageDir + paddedCount + ".bmp";
             auto waitResult = stream->WaitFor(std::chrono::seconds(2));
-            auto acquisitionTime = waitResult.Image->RawTimestamp() / 62500000;
+            auto acquisitionTime = waitResult.Image->RawTimestamp() / DEVICE_TICK_FREQUENCY;
             if (waitResult.Status == Cvb::WaitStatus::Timeout)
             {
                 throw std::runtime_error("acquisition timeout");

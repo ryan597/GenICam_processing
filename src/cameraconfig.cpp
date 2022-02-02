@@ -40,12 +40,14 @@ auto configureSettings(Cvb::DevicePtr device, const int width, const int height,
     auto acquisitionFramerateNode = deviceNodeMap->Node<Cvb::FloatNode>("AcquisitionFrameRate");
     auto widthNode = deviceNodeMap->Node<Cvb::FloatNode>("Width");
     auto heightNode = deviceNodeMap->Node<Cvb::FloatNode>("Height");
-    //auto offsetXNode = deviceNodeMap->Node<Cvb::FloatNode>("OffsetX");
-    //auto offsetYNode = deviceNodeMap->Node<Cvb::FloatNode>("OffsetY");
+    //auto pixelFormatNode = deviceNodeMap->Node<Cvb::EnumerationNode>("PixelFormat");
+    // auto offsetXNode = deviceNodeMap->Node<Cvb::FloatNode>("OffsetX");
+    // auto offsetYNode = deviceNodeMap->Node<Cvb::FloatNode>("OffsetY");
 
     triggerModeNode->SetValue("Off");
     triggerSourceNode->SetValue("Software");
     acquisitionFramerateNode->SetValue(framerate);
+    //pixelFormatNode->SetValue("BAYGR8");
 
     EnablePacketResend(device);
     DiscardCorruptFrames(device);
@@ -56,7 +58,7 @@ auto configureSettings(Cvb::DevicePtr device, const int width, const int height,
  */
 auto DataStreamNodeMap(Cvb::DevicePtr dev) -> Cvb::NodeMapPtr
 {
-    //auto nodeMaps = dev->NodeMaps();  // All node maps
+    // auto nodeMaps = dev->NodeMaps();  // All node maps
     return dev->NodeMap("TLDataStream");
 }
 
@@ -76,14 +78,14 @@ auto LostFrames(Cvb::DevicePtr dev) -> int64_t
  */
 void EnablePacketResend(Cvb::DevicePtr dev)
 {
-  if (auto dataStreamNodeMap = DataStreamNodeMap(dev))
-  {
-    if (auto node = dataStreamNodeMap->Node<Cvb::BooleanNode>(Cvb::String("EnablePacketResend")))
+    if (auto dataStreamNodeMap = DataStreamNodeMap(dev))
     {
-      node->SetValue(true);
-      std::cout << "Successfully enabled packet resend.\n";
+        if (auto node = dataStreamNodeMap->Node<Cvb::BooleanNode>(Cvb::String("EnablePacketResend")))
+        {
+            node->SetValue(true);
+            std::cout << "Successfully enabled packet resend.\n";
+        }
     }
-  }
 }
 
 /*
@@ -91,19 +93,19 @@ void EnablePacketResend(Cvb::DevicePtr dev)
  */
 void DiscardCorruptFrames(Cvb::DevicePtr dev)
 {
-  if (auto dataStreamNodeMap = DataStreamNodeMap(dev))
-  {
-    if (auto node = dataStreamNodeMap->Node<Cvb::BooleanNode>(Cvb::String("PassCorruptFrames")))
+    if (auto dataStreamNodeMap = DataStreamNodeMap(dev))
     {
-      try
-      {
-        node->SetValue(false);
-        std::cout << "Successfully disabled passing corrupt frames.\n";
-      }
-      catch (const std::exception & e)
-      {
-        std::cout << "Pass Corrupt Frames: Error disabling feature!\n";
-      }
+        if (auto node = dataStreamNodeMap->Node<Cvb::BooleanNode>(Cvb::String("PassCorruptFrames")))
+        {
+            try
+            {
+                node->SetValue(false);
+                std::cout << "Successfully disabled passing corrupt frames.\n";
+            }
+            catch (const std::exception &e)
+            {
+                std::cout << "Pass Corrupt Frames: Error disabling feature!\n";
+            }
+        }
     }
-  }
 }
