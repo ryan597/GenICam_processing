@@ -4,6 +4,6 @@
 auto findDevice() -> Cvb::DevicePtr;
 auto configureSettings(Cvb::DevicePtr device, const int width, const int height, const float framerate) -> void;
 auto DataStreamNodeMap(Cvb::DevicePtr dev) -> Cvb::NodeMapPtr;
-auto LostFrames(Cvb::DevicePtr dev) -> int64_t;
-auto EnablePacketResend(Cvb::DevicePtr dev) -> void;
-auto DiscardCorruptFrames(Cvb::DevicePtr dev) -> void;
+auto LostFrames(Cvb::NodeMapPtr dataStreamPtr) -> int;
+auto EnablePacketResend(Cvb::NodeMapPtr dataStreamPtr) -> void;
+auto DiscardCorruptFrames(Cvb::NodeMapPtr dataStreamPtr) -> void;

@@ -1,7 +1,6 @@
 #include <iostream>
 #include <string>
-//#include <memory>
-#include <ctime>
+#include <chrono>
 
 #include <cvb/image.hpp>
 #include <cvb/device_factory.hpp>
@@ -9,7 +8,6 @@
 #include <cvb/driver/stream.hpp>
 
 #include "cameraconfig.hpp"
-//#include "videoprocessing.cpp"
 
 // Camera internal tick frequency per second
 #define DEVICE_TICK_FREQUENCY 62500000
@@ -81,12 +79,6 @@ auto main(int argc, char** argv) -> int
         }
     }
 
-    //VideoProcessor recorder;
-    //recorder.setOutput("/data/test/vid.avi");
-    //auto pImg = cv::Mat(waitResult.Image->Height(), waitResult.Image->Width(), CV_8UC3, waitResult.ImagePlane.Planes());
-    //recorder.writeFrame(pImg);
-
     stream->Stop();
     std::cout << "Finished.\n";
 }
-
