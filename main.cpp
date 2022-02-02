@@ -8,7 +8,7 @@
 //#include <cvb/utilities/system_info.hpp>
 #include <cvb/driver/stream.hpp>
 
-#include "cvbconfig.hpp"
+#include "cameraconfig.hpp"
 //#include "videoprocessing.cpp"
 
 
@@ -18,26 +18,6 @@ auto argsHelper() -> void
               << "Example: ./main 1000 data/test (100 2560 2048)\n";
 }
 
-auto findDevice() -> Cvb::DevicePtr
-{
-    /*
-     * Discover all devices connected, exits if none available
-     */
-    auto deviceList = Cvb::DeviceFactory::Discover(Cvb::DiscoverFlags::IgnoreVins, std::chrono::seconds(5));
-    if (deviceList.empty())
-    {
-        std::cout << "No device available... Program exit.\n";
-        exit(1);
-    }
-    auto device = Cvb::DeviceFactory::Open(deviceList[0].AccessToken());
-    std::cout << "Device open\n";
-    if (device->StreamCount() == 0)
-    {
-        std::cout << "No stream available... Program exit.\n";
-        exit(1);
-    }
-    return device;
-}
 
 auto main(int argc, char** argv) -> int
 {
@@ -49,35 +29,19 @@ auto main(int argc, char** argv) -> int
 
     // Read config params
     const int numImages = std::atoi(argv[1]);
-    std::string imageDir = (argc > 2) ? argv[2] : "data";
+    const std::string imageDir = (argc > 2) ? argv[2] : "data/test/";
     const int buffers = (argc > 3) ? std::atoi(argv[3]) : 100;
     const int width = (argc > 4) ? std::atoi(argv[4]) : 2560;  // For reducing the AOI and thus resolution
     const int height = (argc > 5) ? std::atoi(argv[5]) : 2048;
+    const float framerate = (argc > 6) ? std::atoi(argv[6]) : 20.0;
 
     std::cout << "Initialising device...\n";
     auto device = findDevice();
-
-    // GenICam Settings
-    // Set to software trigger to fill buffers
-    auto deviceNodeMap = device->NodeMap(CVB_LIT("Device"));
-    auto triggerModeNode = deviceNodeMap->Node<Cvb::EnumerationNode>("TriggerMode");
-    auto triggerSourceNode = deviceNodeMap->Node<Cvb::EnumerationNode>("TriggerSource");
-    auto triggerSoftwareNode = deviceNodeMap->Node<Cvb::CommandNode>("TriggerSoftware");
-    auto acquisitionFramerateNode = deviceNodeMap->Node<Cvb::FloatNode>("AcquisitionFrameRate");
-    auto widthNode = deviceNodeMap->Node<Cvb::FloatNode>("Width");
-    auto heightNode = deviceNodeMap->Node<Cvb::FloatNode>("Height");
-    //auto offsetXNode = deviceNodeMap->Node<Cvb::FloatNode>("OffsetX");
-    //auto offsetYNode = deviceNodeMap->Node<Cvb::FloatNode>("OffsetY");
-
-    triggerModeNode->SetValue("Off");
-    triggerSourceNode->SetValue("Software");
-    acquisitionFramerateNode->SetValue(20.0);
-
-    EnablePacketResend(device);
-    DiscardCorruptFrames(device);
+    configureSettings(device, width, height, framerate);
 
     auto stream = device->Stream();
-    // Increase buffer count, all images kept in RAM and written to memory after
+    // Increase buffer count, all images kept in RAM and written to memory after,
+    // only needs to run once as this overwrites the on-device settings
     //stream->RingBuffer()->ChangeCount(buffers, Cvb::DeviceUpdateMode::UpdateDeviceImage);
 
     stream->Start();
@@ -95,7 +59,7 @@ auto main(int argc, char** argv) -> int
         //    std::cout << stream->Statistics(Cvb::StreamInfo::NumBuffersPending) << "\n";
         //}
 
-        std::cout << "processing frames\n";
+        //std::cout << "processing frames\n";
         // Now save images and free up the buffers again
         while (stream->Statistics(Cvb::StreamInfo::NumBuffersPending) > 0)
         {

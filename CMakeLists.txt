@@ -12,8 +12,8 @@ include_directories(Include)
 find_package(CVB REQUIRED)
 
 add_executable(main
-	cvbmain.cpp
-    cvbconfig.cpp
+	main.cpp
+	cameraconfig.cpp
 )
 
 target_link_libraries(main
