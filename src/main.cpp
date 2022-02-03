@@ -2,6 +2,8 @@
 #include <string>
 #include <chrono>
 
+#include <omp.h>
+
 #include <cvb/image.hpp>
 #include <cvb/device_factory.hpp>
 //#include <cvb/utilities/system_info.hpp>
@@ -9,8 +11,6 @@
 
 #include "cameraconfig.hpp"
 
-// Camera internal tick frequency per second
-#define DEVICE_TICK_FREQUENCY 62500000
 
 auto argsHelper() -> void
 {
@@ -49,8 +49,10 @@ auto main(int argc, char** argv) -> int
     int count = 0;
     std::string imagePath = "";
     std::string paddedCount = "";
+    // Camera internal tick frequency per second
+    constexpr int deviceTickFrequency = 62500000;
 
-    std::cout.precision(20);
+    std::cout.precision(10);
     while (numImages - count > 0)
     {
         // Triggering of cameras
@@ -61,20 +63,21 @@ auto main(int argc, char** argv) -> int
 
         //std::cout << "processing frames\n";
         // Now save images and free up the buffers again
-        while (stream->Statistics(Cvb::StreamInfo::NumBuffersPending) > 0)
+        #pragma omp parallel for num_threads(6) private(imagePath) shared(count)
+        for (int i=0; i < buffers; i++)
         {
-            paddedCount = std::to_string(count);
-            paddedCount.insert(0, 8 - paddedCount.length(), '0');
-            imagePath = imageDir + paddedCount + ".bmp";
-            auto waitResult = stream->WaitFor(std::chrono::seconds(2));
-            auto acquisitionTime = waitResult.Image->RawTimestamp() / DEVICE_TICK_FREQUENCY;
+            auto waitResult = stream->WaitFor(std::chrono::seconds(10));
             if (waitResult.Status == Cvb::WaitStatus::Timeout)
             {
                 throw std::runtime_error("acquisition timeout");
             }
+            auto acquisitionTime = waitResult.Image->RawTimestamp() / deviceTickFrequency;
+            imagePath = imageDir + std::to_string(acquisitionTime) + ".bmp";
+
             //waitResult.Image->Save(imagePath);
             std::cout << "Frames: " << std::to_string(count) << "\t|| "
                       << "Captured at " << acquisitionTime << " seconds\n";
+            #pragma omp atomic
             count++;
         }
     }
