@@ -49,8 +49,7 @@ auto configureSettings(Cvb::DevicePtr device, const int width, const int height,
     acquisitionFramerateNode->SetValue(framerate);
     //pixelFormatNode->SetValue("BAYGR8");
 
-    auto dataStreamPtr = DataStreamNodeMap(device);
-    if (dataStreamPtr)
+    if (auto dataStreamPtr = DataStreamNodeMap(device))
     {
         EnablePacketResend(dataStreamPtr);
         DiscardCorruptFrames(dataStreamPtr);
