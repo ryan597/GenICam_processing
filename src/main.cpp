@@ -1,7 +1,6 @@
 #include <iostream>
 #include <string>
 #include <chrono>
-
 #include <omp.h>
 
 #include <cvb/image.hpp>
@@ -42,7 +41,7 @@ auto main(int argc, char** argv) -> int
     auto stream = device->Stream();
     // Increase buffer count, all images kept in RAM and written to memory after,
     // only needs to run once as this overwrites the on-device settings
-    //stream->RingBuffer()->ChangeCount(buffers, Cvb::DeviceUpdateMode::UpdateDeviceImage);
+    stream->RingBuffer()->ChangeCount(buffers, Cvb::DeviceUpdateMode::UpdateDeviceImage);
 
     stream->Start();
     std::cout << "Acquisition started...\n";
@@ -56,28 +55,33 @@ auto main(int argc, char** argv) -> int
     while (numImages - count > 0)
     {
         // Triggering of cameras
-        while (stream->Statistics(Cvb::StreamInfo::NumBuffersPending) < buffers) 
+        std::cout << "Sending buffers...\n";
+        while (stream->Statistics(Cvb::StreamInfo::NumBuffersPending) < buffers - 5) 
         {
             triggerSoftware->Execute();
-            std::cout << stream->Statistics(Cvb::StreamInfo::NumBuffersPending) << "\n";
+            //std::cout << stream->Statistics(Cvb::StreamInfo::NumBuffersPending) << '\n';
         }
-
-        //std::cout << "processing frames\n";
+        std::cout << "Saving...\n";
         // Now save images and free up the buffers again
+        //while (stream->Statistics(Cvb::StreamInfo::NumBuffersPending) > 0)
         #pragma omp parallel for num_threads(6) private(imagePath) shared(count)
         for (int i=0; i < buffers; i++)
         {
             auto waitResult = stream->WaitFor(std::chrono::seconds(10));
+            std::string paddedCount = std::to_string(count);
+            paddedCount.insert(0, 9 - paddedCount.length(), '0');
+            
             if (waitResult.Status == Cvb::WaitStatus::Timeout)
             {
                 throw std::runtime_error("acquisition timeout");
             }
             auto acquisitionTime = waitResult.Image->RawTimestamp() / deviceTickFrequency;
-            imagePath = imageDir + std::to_string(acquisitionTime) + ".bmp";
+            imagePath = imageDir + paddedCount + ".bmp";
+            waitResult.Image->Save(imagePath);
 
-            //waitResult.Image->Save(imagePath);
             std::cout << "Frames: " << std::to_string(count) << "\t|| "
-                      << "Captured at " << acquisitionTime << " seconds\n";
+                      << "Captured at: " << acquisitionTime << " seconds\t|| "
+                      << "Thread: " << omp_get_thread_num() << '\n';
             #pragma omp atomic
             count++;
         }

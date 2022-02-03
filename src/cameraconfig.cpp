@@ -52,7 +52,7 @@ auto configureSettings(Cvb::DevicePtr device, const int width, const int height,
     if (auto dataStreamPtr = DataStreamNodeMap(device))
     {
         EnablePacketResend(dataStreamPtr);
-        DiscardCorruptFrames(dataStreamPtr);
+        //DiscardCorruptFrames(dataStreamPtr);
     }
     else
     {
@@ -66,8 +66,8 @@ auto configureSettings(Cvb::DevicePtr device, const int width, const int height,
  */
 auto DataStreamNodeMap(Cvb::DevicePtr device) -> Cvb::NodeMapPtr
 {
-    // auto nodeMaps = dev->NodeMaps();  // All node maps
-    return device->NodeMap("TLDataStream");
+    //auto nodeMaps = device->NodeMaps();  // All node maps
+    return device->NodeMap("TLDatastream");
 }
 
 /*
