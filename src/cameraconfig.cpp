@@ -64,10 +64,10 @@ auto configureSettings(Cvb::DevicePtr device, const int width, const int height,
 /*
  * Return the DataStream Node Map from passed device pointer
  */
-auto DataStreamNodeMap(Cvb::DevicePtr dev) -> Cvb::NodeMapPtr
+auto DataStreamNodeMap(Cvb::DevicePtr device) -> Cvb::NodeMapPtr
 {
     // auto nodeMaps = dev->NodeMaps();  // All node maps
-    return dev->NodeMap("TLDataStream");
+    return device->NodeMap("TLDataStream");
 }
 
 /*
