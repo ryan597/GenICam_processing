@@ -37,7 +37,7 @@ auto main(int argc, char** argv) -> int
 
     std::cout << "Initialising device...\n";
     auto device = findDevice();
-    configureSettings(device, width, height, framerate);
+    auto triggerSoftware = configureSettings(device, width, height, framerate);
 
     auto stream = device->Stream();
     // Increase buffer count, all images kept in RAM and written to memory after,
@@ -56,9 +56,9 @@ auto main(int argc, char** argv) -> int
     while (numImages - count > 0)
     {
         // Triggering of cameras
-        //while (stream->Statistics(Cvb::StreamInfo::NumBuffersPending) < buffers) {
-        //    triggerSoftwareNode->Execute();
-        //    std::cout << stream->Statistics(Cvb::StreamInfo::NumBuffersPending) << "\n";
+        while (stream->Statistics(Cvb::StreamInfo::NumBuffersPending) < buffers) {
+            triggerSoftware->Execute();
+            std::cout << stream->Statistics(Cvb::StreamInfo::NumBuffersPending) << "\n";
         //}
 
         //std::cout << "processing frames\n";

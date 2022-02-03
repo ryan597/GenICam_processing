@@ -29,7 +29,7 @@ auto findDevice() -> Cvb::DevicePtr
  * Sets the device image size, framerate and triggering mode.
  * Enable packet resend and discarding of corrupt frames.
  */
-auto configureSettings(Cvb::DevicePtr device, const int width, const int height, const float framerate) -> void
+auto configureSettings(Cvb::DevicePtr device, const int width, const int height, const float framerate) -> Cvb::GenApi::CommandNodePtr
 {
     // GenICam Settings
     // Set to software trigger to fill buffers
@@ -58,6 +58,7 @@ auto configureSettings(Cvb::DevicePtr device, const int width, const int height,
     {
         std::cout << "Data Stream pointer is null... Failed to enable packet resend & discarding corrupt frames\n";
     }
+    return triggerSoftwareNode;
 }
 
 /*
