@@ -4,7 +4,7 @@ project(genicam_processing)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -fopenmp")
-set(CVB_DIR "/opt/cvb")
+set(CVB_DIR "../../cvb")
 set(CMAKE_MODULE_PATH "${CMAKE_MODULE_PATH}" "${CVB_DIR}/cmake")
 
 include_directories(Include)
