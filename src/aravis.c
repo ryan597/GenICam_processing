@@ -85,5 +85,7 @@ int main (int argc, char **argv)
         return EXIT_FAILURE;
     }
 
+    arv_shutdown();
+
     return EXIT_SUCCESS;
 }
