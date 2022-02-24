@@ -28,7 +28,7 @@ int main (int argc, char **argv)
         if (ARV_IS_STREAM (stream)) {
             // Retrive the payload size for buffer creation
             guint payload = arv_camera_get_payload (camera, &error);
-            printf("Payload size '%lu'\n", payload);
+            printf("Payload size '%u'\n", payload);
             if (error == NULL) {
                 // Insert buffers in the stream buffer pool
                 for (int i = 0; i < 20; i++)
