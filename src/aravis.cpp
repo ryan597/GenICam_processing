@@ -2,6 +2,7 @@
 #include <cstdio>
 #include <cstddef>
 
+#include <omp.h>
 #include <arv.h>
 #include <CImg.h>
 
@@ -57,7 +58,8 @@ auto main(int argc, char **argv) -> int
                 const auto image_height = arv_buffer_get_image_height(buffer);
                 cimg_library::CImg<unsigned char> image(image_width, image_height);
 
-                for (int i = 0; i < 10; i++) {
+                #pragma omp parallel for private(buffer, p_data, image) shared(stream, buffer_size, image_width, image_height)
+                for (int i = 0; i < 100; i++) {
                     buffer = arv_stream_pop_buffer(stream);
                     printf("Frame %d ", i);
 
