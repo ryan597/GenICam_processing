@@ -1,0 +1,7 @@
+{
+    "clang-tidy.compilerArgs": [
+        "`pkg-config --cflags --libs aravis-0.8`",
+        "-I/home/ryan/Downloads/aravis/src",
+        "-std=c99",
+        "-Wall"],
+}

@@ -1,0 +1,25 @@
+{
+    "configurations": [
+        {
+            "name": "Linux",
+            "includePath": [
+                "${default}",
+                "/usr/include",
+                "/usr/include/glib-2.0/",
+                "/usr/lib/glib-2.0/include",
+                "/usr/local/include/opencv4",
+                "/usr/local/include/aravis-0.8",
+                "/home/ryan/Downloads/aravis/src"
+            ],
+            "defines": [],
+            "compilerPath": "/usr/bin/clang",
+            "intelliSenseMode": "linux-clang-x64",
+            "compilerArgs": [
+                "`pkg-config --cflags --libs aravis-0.8`",
+                "-std=c99",
+                "-Wall"
+            ]
+        }
+    ],
+    "version": 4
+}
