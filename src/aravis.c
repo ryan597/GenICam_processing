@@ -9,6 +9,16 @@
 #include <stdlib.h>
 #include <stdio.h>
 
+
+/*
+arv_camera_set_frame_rate()
+arv_camera_set_exposure_auto()
+arv_camera_set_gain_auto()
+
+
+*/
+
+
 /*
  * Connect to the first available camera, then acquire 10 buffers.
  */
@@ -85,7 +95,6 @@ int main (int argc, char **argv)
         return EXIT_FAILURE;
     }
 
-    arv_shutdown();
 
     return EXIT_SUCCESS;
 }

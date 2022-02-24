@@ -1,12 +1,12 @@
-project('aravis-c', 'c', version: '0.0.1')
+project('Genicam-processing', 'c', version: '0.0.2')
 
 
 aravis_dep = dependency('aravis-0.8')
 
-examples = [
+programs = [
   'aravis',
 ]
 
-foreach e: examples
+foreach e: programs
   exe = executable (e, e + '.c', dependencies: aravis_dep)
 endforeach
