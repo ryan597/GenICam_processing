@@ -1,12 +1,15 @@
-project('Genicam-processing', 'c', version: '0.0.2')
+project('Genicam-processing', 'cpp', version: '0.0.3')
 
 
 aravis_dep = dependency('aravis-0.8')
+thread_dep = dependency('threads')
+x11_dep = dependency('x11')
+cimg_dir = include_directories('/home/ryan/Downloads/CImg')
 
 programs = [
   'aravis',
 ]
 
 foreach e: programs
-  exe = executable (e, e + '.c', dependencies: aravis_dep)
+  exe = executable (e, e + '.cpp', include_directories: cimg_dir, dependencies: [thread_dep, x11_dep, aravis_dep]) 
 endforeach

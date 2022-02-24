@@ -2,9 +2,7 @@
 
 imageDir=date +'%Y-%m-%d_%H-%M'
 numImgs=100
-acquisitionMode=Continuous  # SingleFrame
-pixelFormat=RGBx888Packed  # Mono8
 
 mkdir ../data/$imageDir
 
-build/main $numImages ../data/$imageDir $acquisitionMode $pixelFormat |& tee logs/logging.txt
+build/aravis $numImages ../data/$imageDir |& tee ../logs/logging.txt
