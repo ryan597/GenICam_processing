@@ -68,13 +68,10 @@ auto main(int argc, char **argv) -> int
             }
             if (error == NULL)
             {
-                // Retrieve 10 buffers
                 unsigned char* p_data{};  // 8 bit pointer
                 size_t buffer_size{};
 
-                // Pop first image to get initialise height and width from buffer
-                ArvBuffer *buffer;
-                buffer = arv_stream_pop_buffer(stream);
+                ArvBuffer* buffer;
                 cimg_library::CImg<unsigned char> image(width, height);
 
                 guint64 completed_buffers{};
@@ -86,7 +83,7 @@ auto main(int argc, char **argv) -> int
 
                 int count{0};
 
-                //#pragma omp parallel for private(buffer, buffer_size, p_data, image) shared(stream, width, count)
+                #pragma omp parallel for firstprivate(buffer_size, image, p_completed_buffers, p_failed_buffers, p_underrun_buffers) private(buffer, p_data)
                 for (int i = 0; i < max_frames; i++) {
                     buffer = arv_stream_pop_buffer(stream);
 
@@ -103,7 +100,7 @@ auto main(int argc, char **argv) -> int
                         // Stream statistics
                         if (count % 10 == 0)
                         {
-                            arv_stream_get_statistics(stream, p_completed_buffers, p_failed_buffers, p_underrun_buffers);
+                            //arv_stream_get_statistics(stream, p_completed_buffers, p_failed_buffers, p_underrun_buffers);
                             printf("Frames: %d \t|| Completed Buffers: %lu \t || Failed Buffers: %lu \t || Underruns: %lu \n",
                                    count, completed_buffers, failed_buffers, underrun_buffers);
                         }
@@ -111,7 +108,7 @@ auto main(int argc, char **argv) -> int
                         image.save_tiff(image_path.c_str());
                         // Don't destroy the buffer, but put it back into the buffer pool
                         arv_stream_push_buffer(stream, buffer);
-                        //#pragma omp atomic
+                        #pragma omp atomic
                         count++;
                     }
                 }
