@@ -74,16 +74,13 @@ auto main(int argc, char **argv) -> int
                 ArvBuffer* buffer;
                 cimg_library::CImg<unsigned char> image(width, height);
 
-                guint64 completed_buffers{};
-                guint64 failed_buffers{};
-                guint64 underrun_buffers{};
-                guint64* p_completed_buffers = &completed_buffers;
-                guint64* p_failed_buffers = &failed_buffers;
-                guint64* p_underrun_buffers = &underrun_buffers;
+                unsigned long completed_buffers{};
+                unsigned long failed_buffers{};
+                unsigned long underrun_buffers{};
 
                 int count{0};
 
-                #pragma omp parallel for firstprivate(buffer_size, image, p_completed_buffers, p_failed_buffers, p_underrun_buffers) private(buffer, p_data)
+                #pragma omp parallel for firstprivate(buffer_size, image) private(buffer, p_data)
                 for (int i = 0; i < max_frames; i++) {
                     buffer = arv_stream_pop_buffer(stream);
 
@@ -100,7 +97,7 @@ auto main(int argc, char **argv) -> int
                         // Stream statistics
                         if (count % 10 == 0)
                         {
-                            //arv_stream_get_statistics(stream, p_completed_buffers, p_failed_buffers, p_underrun_buffers);
+                            arv_stream_get_statistics(stream, &completed_buffers, &failed_buffers, &underrun_buffers);
                             printf("Frames: %d \t|| Completed Buffers: %lu \t || Failed Buffers: %lu \t || Underruns: %lu \n",
                                    count, completed_buffers, failed_buffers, underrun_buffers);
                         }
