@@ -27,3 +27,11 @@ auto check_current_time(int minute_to_start) -> void
         }
     }
 }
+
+/*
+auto main(int argc, char **argv) -> int
+{
+    int minute_to_start = std::atoi(argv[1]);
+    check_current_time(minute_to_start);
+}
+*/
