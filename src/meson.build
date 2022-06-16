@@ -1,4 +1,4 @@
-project('Genicam-processing', 'cpp', version: '0.0.3')
+project('Genicam-processing', 'cpp', version: '0.0.5')
 
 
 aravis_dep = dependency('aravis-0.8')
