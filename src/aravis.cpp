@@ -90,7 +90,9 @@ auto main(int argc, char **argv) -> int
 
     // Connect to the first available camera
     camera = arv_camera_new(NULL, &error);
-    arv_camera_gv_set_packet_size(camera, 1500, &error);  // Use larger packets for better performance
+
+    // arv_camera_gv_set_packet_size(camera, 8192, &error);
+    arv_camera_gv_auto_packet_size(camera, &error);
     arv_camera_set_exposure_time_auto(camera, ARV_AUTO_CONTINUOUS, &error);
     arv_camera_set_gain_auto(camera, ARV_AUTO_CONTINUOUS, &error);
     arv_camera_set_region(camera, 0, 0, width, height, &error);
