@@ -1,0 +1,19 @@
+Max Frames 100
+Width 1500
+Height 1000
+Packet Size 8992
+Framerate 10.000000
+Found camera 'GO-5000C-PGE'
+Payload size '1500000'
+Starting acquisition...
+43:0:0:0
+Frames: 10 	|| Completed Buffers: 31 	 || Failed Buffers: 0 	 || Underruns: 82790 
+Frames: 20 	|| Completed Buffers: 32 	 || Failed Buffers: 0 	 || Underruns: 82790 
+Frames: 30 	|| Completed Buffers: 34 	 || Failed Buffers: 0 	 || Underruns: 82790 
+Frames: 40 	|| Completed Buffers: 40 	 || Failed Buffers: 0 	 || Underruns: 82790 
+Frames: 50 	|| Completed Buffers: 50 	 || Failed Buffers: 0 	 || Underruns: 82790 
+Frames: 60 	|| Completed Buffers: 60 	 || Failed Buffers: 0 	 || Underruns: 82790 
+Frames: 70 	|| Completed Buffers: 70 	 || Failed Buffers: 0 	 || Underruns: 82790 
+Frames: 80 	|| Completed Buffers: 80 	 || Failed Buffers: 0 	 || Underruns: 82790 
+Frames: 90 	|| Completed Buffers: 90 	 || Failed Buffers: 0 	 || Underruns: 82790 
+Frames: 100 	|| Completed Buffers: 100 	 || Failed Buffers: 0 	 || Underruns: 82790 

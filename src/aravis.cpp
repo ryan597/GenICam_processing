@@ -8,15 +8,15 @@
 
 #define cimg_use_tiff USE_TIFF
 
-#include "omp.h"
 #include "arv.h"
 #include "CImg.h"
+#include "check_time.cpp"
 
 std::deque<cimg_library::CImg<unsigned char>> image_deque;
 std::mutex deque_mutex;
 int saved_count{};
 
-auto retrieve_images(ArvStream* stream, const int max_frames, const int width, const int height) -> void
+auto retrieve_images(ArvStream* stream, const int max_frames, const int width, const int height, const int minute_to_start) -> void
 {
     ArvBuffer *buffer;
     unsigned char* p_data{};  // 8 bit pointer
@@ -26,6 +26,9 @@ auto retrieve_images(ArvStream* stream, const int max_frames, const int width, c
     unsigned long completed_buffers{};
     unsigned long failed_buffers{};
     unsigned long underrun_buffers{};
+
+    check_current_time(minute_to_start);
+
     for (int i = 0; i < max_frames; i++) {
         buffer = arv_stream_pop_buffer(stream);
         if (ARV_IS_BUFFER(buffer))
@@ -48,8 +51,9 @@ auto retrieve_images(ArvStream* stream, const int max_frames, const int width, c
             if (count % 10 == 0)
             {
                 arv_stream_get_statistics(stream, &completed_buffers, &failed_buffers, &underrun_buffers);
-                printf("Frames: %d \t|| Completed Buffers: %lu \t || Failed Buffers: %lu \t || Underruns: %lu \n",
+                fprintf(stdout, "Frames: %d \t|| Completed Buffers: %lu \t || Failed Buffers: %lu \t || Underruns: %lu \n",
                     count, completed_buffers, failed_buffers, underrun_buffers);
+                fflush(stdout);
             }
         }
     }
@@ -62,7 +66,7 @@ auto save_images(std::string filepath, const int max_frames) -> void
         if (image_deque.size() != 0)
         {
             deque_mutex.lock();
-            std::string image_path = filepath + "test" + std::to_string(saved_count) + ".tiff";
+            std::string image_path = filepath + std::to_string(saved_count) + ".tiff";
             auto image = image_deque.front();
             image_deque.pop_front();
             saved_count++;
@@ -76,7 +80,7 @@ auto main(int argc, char **argv) -> int
 {
     if (argc == 1)
     {
-        printf("Usage ./aravis MaxFrames FilePath FrameRate \nUsing defaults \nMaxFrames: 100 \nFilePath: ../../data/test/ \nFrameRate: 20 \n");
+        printf("Usage ./aravis MaxFrames FilePath Width Height FrameRate MinToStart \nUsing defaults \nMaxFrames: 100 \nFilePath: ../../data/test/ \nFrameRate: 20 \n");
     }
 
     const int max_frames = (argc > 1) ? std::atoi(argv[1]) : 100;
@@ -84,6 +88,7 @@ auto main(int argc, char **argv) -> int
     const int width = (argc > 3) ? std::atoi(argv[3]) : 1500;  // max 2560
     const int height = (argc > 4) ? std::atoi(argv[4]) : 1500;  // max 2048
     const double framerate = (argc > 5) ? std::atoi(argv[5]) : 10;
+    const int minute_to_start = (argc > 6) ? std::atoi(argv[6]) : 00;
 
     ArvCamera *camera;
     GError *error = NULL;
@@ -91,23 +96,25 @@ auto main(int argc, char **argv) -> int
     // Connect to the first available camera
     camera = arv_camera_new(NULL, &error);
 
-    // arv_camera_gv_set_packet_size(camera, 8192, &error);
-    arv_camera_gv_auto_packet_size(camera, &error);
+    arv_camera_gv_set_packet_size(camera, 8192, &error);
+    //arv_camera_gv_auto_packet_size(camera, &error);
     arv_camera_set_exposure_time_auto(camera, ARV_AUTO_CONTINUOUS, &error);
     arv_camera_set_gain_auto(camera, ARV_AUTO_CONTINUOUS, &error);
     arv_camera_set_region(camera, 0, 0, width, height, &error);
     arv_camera_set_frame_rate(camera, framerate, &error);  //
+    printf("Max Frames %d\n", max_frames);
+    printf("Width %d\nHeight %d\n", width, height);
     printf("Packet Size %u\n", arv_camera_gv_get_packet_size(camera, &error));
     printf("Framerate %f\n", arv_camera_get_frame_rate(camera, &error));
     if (error != NULL)
     {
-        printf("Camera error!\n");
+        fprintf(stderr, "Camera error!\n");
         return EXIT_FAILURE;
     }
 
     if (ARV_IS_CAMERA(camera))
     {
-        printf("Found camera '%s'\n", arv_camera_get_model_name(camera, NULL));
+        fprintf(stdout, "Found camera '%s'\n", arv_camera_get_model_name(camera, NULL));
 
         // Create the stream object without callback
         ArvStream *stream = arv_camera_create_stream(camera, NULL, NULL, &error);
@@ -115,7 +122,7 @@ auto main(int argc, char **argv) -> int
         {
             // Retrive the payload size for buffer creation
             const auto payload = arv_camera_get_payload (camera, &error);
-            printf("Payload size '%u'\n", payload);
+            fprintf(stdout, "Payload size '%u'\n", payload);
             if (error == NULL)
             {
                 // Insert buffers in the stream buffer pool
@@ -126,13 +133,14 @@ auto main(int argc, char **argv) -> int
             if (error == NULL)
             {
                 // Start the acquisition
-                printf("Starting acquisition...\n");
+                fprintf(stdout, "Starting acquisition...\n");
+                fflush(stdout);
                 arv_camera_start_acquisition(camera, &error);
             }
             if (error == NULL)
             {
                 // Raspberry Pi 4 with 4 threads
-                std::thread t1(retrieve_images, stream, max_frames, width, height);
+                std::thread t1(retrieve_images, stream, max_frames, width, height, minute_to_start);
                 std::thread t2(save_images, filepath, max_frames);
                 //std::thread t3(save_images, filepath, max_frames);
                 //std::thread t4(save_images, filepath, max_frames);
@@ -157,7 +165,7 @@ auto main(int argc, char **argv) -> int
     if (error != NULL)
     {
         // En error happened, display the correspdonding message
-        printf("Error: %s\n", error->message);
+        fprintf(stderr, "Error: %s\n", error->message);
         return EXIT_FAILURE;
     }
 
