@@ -27,7 +27,7 @@ auto retrieve_images(ArvStream* stream, const int max_frames, const int width, c
     unsigned long failed_buffers{};
     unsigned long underrun_buffers{};
 
-    check_current_time(minute_to_start);
+    check_time(minute_to_start);
 
     for (int i = 0; i < max_frames; i++) {
         buffer = arv_stream_pop_buffer(stream);
@@ -53,7 +53,6 @@ auto retrieve_images(ArvStream* stream, const int max_frames, const int width, c
                 arv_stream_get_statistics(stream, &completed_buffers, &failed_buffers, &underrun_buffers);
                 fprintf(stdout, "Frames: %d \t|| Completed Buffers: %lu \t || Failed Buffers: %lu \t || Underruns: %lu \n",
                     count, completed_buffers, failed_buffers, underrun_buffers);
-                fflush(stdout);
             }
         }
     }
@@ -63,15 +62,20 @@ auto save_images(std::string filepath, const int max_frames) -> void
 {
     while(saved_count < max_frames)
     {
+        deque_mutex.lock();
         if (image_deque.size() != 0)
         {
-            deque_mutex.lock();
             std::string image_path = filepath + std::to_string(saved_count) + ".tiff";
             auto image = image_deque.front();
             image_deque.pop_front();
             saved_count++;
             deque_mutex.unlock();
             image.save_tiff(image_path.c_str());
+        }
+        else
+        {
+             deque_mutex.unlock();
+             std::this_thread::sleep_for(std::chrono::seconds(1));
         }
     }
 }
@@ -96,7 +100,7 @@ auto main(int argc, char **argv) -> int
     // Connect to the first available camera
     camera = arv_camera_new(NULL, &error);
 
-    arv_camera_gv_set_packet_size(camera, 8192, &error);
+    arv_camera_gv_set_packet_size(camera, 1500, &error);
     //arv_camera_gv_auto_packet_size(camera, &error);
     arv_camera_set_exposure_time_auto(camera, ARV_AUTO_CONTINUOUS, &error);
     arv_camera_set_gain_auto(camera, ARV_AUTO_CONTINUOUS, &error);
@@ -142,17 +146,19 @@ auto main(int argc, char **argv) -> int
                 // Raspberry Pi 4 with 4 threads
                 std::thread t1(retrieve_images, stream, max_frames, width, height, minute_to_start);
                 std::thread t2(save_images, filepath, max_frames);
-                //std::thread t3(save_images, filepath, max_frames);
-                //std::thread t4(save_images, filepath, max_frames);
+                std::thread t3(save_images, filepath, max_frames);
+                std::thread t4(save_images, filepath, max_frames);
 
                 t1.join();
                 t2.join();
-                //t3.join();
-                //t4.join();
+                t3.join();
+                t4.join();
             }
             if (error == NULL)
             {
                 // Stop the acquisition
+                fprintf(stdout, "End of Acquisition\n");
+                fflush(stdout);
                 arv_camera_stop_acquisition(camera, &error);
             }
             // Destroy the stream object

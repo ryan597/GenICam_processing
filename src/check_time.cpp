@@ -2,7 +2,7 @@
 #include <chrono>
 
 
-auto check_current_time(int minute_to_start) -> void
+auto check_time(int minute_to_start) -> void
 {
     // checks the time until it is minute_to_start:00:000
     bool cond = true;
