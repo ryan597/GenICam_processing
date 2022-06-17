@@ -16,6 +16,18 @@ std::deque<cimg_library::CImg<unsigned char>> image_deque;
 std::mutex deque_mutex;
 int saved_count{};
 
+auto triggering(ArvCamera* camera, const int max_frames, const int framerate, const int minute_to_start) -> void
+{
+    GError *error = NULL;
+    const int sleep_for = 1000 / framerate;  // 1000 ms divided by framerate gives sleeptime in ms
+    check_time(minute_to_start);
+    for (int i=0; i < max_frames; i++)
+    {
+        arv_camera_software_trigger(camera, &error);
+        std::this_thread::sleep_for(std::chrono::milliseconds(sleep_for));
+    }
+}
+
 auto retrieve_images(ArvStream* stream, const int max_frames, const int width, const int height, const int minute_to_start) -> void
 {
     ArvBuffer *buffer;
@@ -27,10 +39,8 @@ auto retrieve_images(ArvStream* stream, const int max_frames, const int width, c
     unsigned long failed_buffers{};
     unsigned long underrun_buffers{};
 
-    check_time(minute_to_start);
-
     for (int i = 0; i < max_frames; i++) {
-        buffer = arv_stream_pop_buffer(stream);
+        buffer = arv_stream_pop_buffer(stream);  // pop_buffer blocks until buffer is available
         if (ARV_IS_BUFFER(buffer))
         {
             p_data = (unsigned char *) arv_buffer_get_data(buffer, &buffer_size);
@@ -44,7 +54,7 @@ auto retrieve_images(ArvStream* stream, const int max_frames, const int width, c
             deque_mutex.lock();
             image_deque.push_back(image);
             deque_mutex.unlock();
-            //printf("Timestamp:  %lu\n", arv_buffer_get_system_timestamp(buffer));
+            fprintf(stdout, "Timestamp:  %lu\n", arv_buffer_get_system_timestamp(buffer));
             arv_stream_push_buffer(stream, buffer);
             count++;
             // Stream statistics
@@ -53,6 +63,7 @@ auto retrieve_images(ArvStream* stream, const int max_frames, const int width, c
                 arv_stream_get_statistics(stream, &completed_buffers, &failed_buffers, &underrun_buffers);
                 fprintf(stdout, "Frames: %d \t|| Completed Buffers: %lu \t || Failed Buffers: %lu \t || Underruns: %lu \n",
                     count, completed_buffers, failed_buffers, underrun_buffers);
+                fflush(stdout);
             }
         }
     }
@@ -105,7 +116,8 @@ auto main(int argc, char **argv) -> int
     arv_camera_set_exposure_time_auto(camera, ARV_AUTO_CONTINUOUS, &error);
     arv_camera_set_gain_auto(camera, ARV_AUTO_CONTINUOUS, &error);
     arv_camera_set_region(camera, 0, 0, width, height, &error);
-    arv_camera_set_frame_rate(camera, framerate, &error);  //
+    //arv_camera_set_frame_rate(camera, framerate, &error);
+    arv_camera_set_trigger(camera, "Software", &error);
     printf("Max Frames %d\n", max_frames);
     printf("Width %d\nHeight %d\n", width, height);
     printf("Packet Size %u\n", arv_camera_gv_get_packet_size(camera, &error));
@@ -144,8 +156,8 @@ auto main(int argc, char **argv) -> int
             if (error == NULL)
             {
                 // Raspberry Pi 4 with 4 threads
-                std::thread t1(retrieve_images, stream, max_frames, width, height, minute_to_start);
-                std::thread t2(save_images, filepath, max_frames);
+                std::thread t1(triggering, camera, max_frames, framerate, minute_to_start);
+                std::thread t2(retrieve_images, stream, max_frames, width, height, minute_to_start);
                 std::thread t3(save_images, filepath, max_frames);
                 std::thread t4(save_images, filepath, max_frames);
 
