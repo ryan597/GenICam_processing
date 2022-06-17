@@ -1,8 +1,0 @@
-Max Frames 100
-Width 1500
-Height 1000
-Packet Size 8192
-Framerate 10.000000
-Found camera 'GO-5000C-PGE'
-Payload size '1500000'
-Starting acquisition...
