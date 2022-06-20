@@ -1,4 +1,6 @@
 meson.build
+data
 data/**
 build/**
 logs/**
+*.png
