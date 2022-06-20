@@ -32,13 +32,13 @@ auto retrieve_images(ArvStream* stream, const int max_frames, const int width, c
 {
     ArvBuffer *buffer;
     unsigned char* p_data{};  // 8 bit pointer
-    size_t buffer_size{};
+    std::size_t buffer_size{};
     cimg_library::CImg<unsigned char> image(width, height);
     int count{};
     unsigned long completed_buffers{};
     unsigned long failed_buffers{};
     unsigned long underrun_buffers{};
-
+    guint64 t0{};
     for (int i = 0; i < max_frames; i++) {
         buffer = arv_stream_pop_buffer(stream);  // pop_buffer blocks until buffer is available
         if (ARV_IS_BUFFER(buffer))
@@ -54,7 +54,9 @@ auto retrieve_images(ArvStream* stream, const int max_frames, const int width, c
             deque_mutex.lock();
             image_deque.push_back(image);
             deque_mutex.unlock();
-            fprintf(stdout, "Timestamp:  %lu\n", arv_buffer_get_system_timestamp(buffer));
+            guint64 t1 = arv_buffer_get_system_timestamp(buffer);
+            fprintf(stdout, "Timestamp:  %lu\t || Time between frames: %lu\n", t1, t1-t0);
+            t0 = t1;
             arv_stream_push_buffer(stream, buffer);
             count++;
             // Stream statistics
@@ -86,7 +88,7 @@ auto save_images(std::string filepath, const int max_frames) -> void
         else
         {
              deque_mutex.unlock();
-             std::this_thread::sleep_for(std::chrono::seconds(1));
+             std::this_thread::sleep_for(std::chrono::seconds(2));
         }
     }
 }
@@ -143,7 +145,7 @@ auto main(int argc, char **argv) -> int
             {
                 // Insert buffers in the stream buffer pool
                 for (int i = 0; i < 30; i++)
-                    arv_stream_push_buffer(stream, arv_buffer_new (payload, NULL));
+                    arv_stream_push_buffer(stream, arv_buffer_new(payload, NULL));
             }
 
             if (error == NULL)
