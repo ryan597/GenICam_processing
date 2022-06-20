@@ -26,7 +26,6 @@ auto retrieve_images(ArvStream* stream, const int max_frames, const int width, c
     unsigned long completed_buffers{};
     unsigned long failed_buffers{};
     unsigned long underrun_buffers{};
-    guint64 time0{};
     for (int i = 0; i < max_frames; i++) {
         buffer = arv_stream_pop_buffer(stream);  // pop_buffer blocks until buffer is available
         if (ARV_IS_BUFFER(buffer))
@@ -42,10 +41,6 @@ auto retrieve_images(ArvStream* stream, const int max_frames, const int width, c
             deque_mutex.lock();
             image_deque.push_back(image);
             deque_mutex.unlock();
-            guint64 time1 = arv_buffer_get_system_timestamp(buffer);
-            double time_between_frames = (time1 - time0) / 1000000000; // Change from nanoseconds to seconds
-            fprintf(stdout, "Time between frames: %f\n", time_between_frames);
-            time0 = time1;
             arv_stream_push_buffer(stream, buffer);
             count++;
             // Stream statistics
@@ -102,13 +97,13 @@ auto main(int argc, char **argv) -> int
     // Connect to the first available camera
     camera = arv_camera_new(NULL, &error);
 
-    arv_camera_gv_set_packet_size(camera, 1500, &error);
-    //arv_camera_gv_auto_packet_size(camera, &error);
+    //arv_camera_gv_set_packet_size(camera, 1500, &error);
+    arv_camera_gv_auto_packet_size(camera, &error);
     arv_camera_set_exposure_time_auto(camera, ARV_AUTO_CONTINUOUS, &error);
     arv_camera_set_gain_auto(camera, ARV_AUTO_CONTINUOUS, &error);
     arv_camera_set_region(camera, 0, 0, width, height, &error);
     arv_camera_set_frame_rate(camera, framerate, &error);
-    arv_camera_set_trigger(camera, "Software", &error);
+    //arv_camera_set_trigger(camera, "Software", &error);
     printf("Max Frames %d\n", max_frames);
     printf("Width %d\nHeight %d\n", width, height);
     printf("Packet Size %u\n", arv_camera_gv_get_packet_size(camera, &error));
