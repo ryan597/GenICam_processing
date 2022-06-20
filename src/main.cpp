@@ -22,6 +22,7 @@ auto retrieve_images(ArvStream* stream, const int max_frames, const int width, c
     unsigned char* p_data{};  // 8 bit pointer
     std::size_t buffer_size{};
     cimg_library::CImg<unsigned char> image(width, height);
+    cimg_library::CImg<unsigned char> blank_image(width, height, 1, 1, 0);
     int count{};
     unsigned long completed_buffers{};
     unsigned long failed_buffers{};
@@ -51,6 +52,13 @@ auto retrieve_images(ArvStream* stream, const int max_frames, const int width, c
                     count, completed_buffers, failed_buffers, underrun_buffers);
                 fflush(stdout);
             }
+        }
+        else  // push back a black image so we can keep saved images in sync
+        {
+            deque_mutex.lock();
+            image_deque.push_back(blank_image);
+            deque_mutex.unlock();
+            arv_stream_push_buffer(stream, buffer);
         }
     }
 }
