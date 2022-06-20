@@ -1,4 +1,4 @@
-main
+meson.build
 data/**
 build/**
 logs/**
