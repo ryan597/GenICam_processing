@@ -11,7 +11,7 @@ cimg_dir = include_directories('/home/ryan/Downloads/CImg')
 
 
 programs = [
-  'aravis',
+  'main',
 ]
 
 foreach e: programs

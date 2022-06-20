@@ -22,43 +22,57 @@ This software was developed for (and tested with) the JAI GO 5000c-PGE camera. I
 
 ## 2. Installation
 
-### mvIMPACT
+### Aravis
 
-This software was written using the mvIMPACT_Acquire C++ SDK and its supplied GenTL.
-Install the mvIMPACT software for your device using the downloads page [here](http://static.matrix-vision.com/mvIMPACT_Acquire/2.45.0/) and download for your CPU architecture along with the install script.
+Follow the installation instruction on the [Aravis project page](https://aravisproject.github.io/aravis/building.html).
 
----
+### CImg
+
+CImg is used for the saving of the images. It is a simple header only library and can be downloaded [here](https://cimg.eu/). You will need to tell meson where to find the header in the meson.build file.
 
 ### C++
 
 To compile this project it is necessary to have a C++ compiler with at least C++11.
 
-The supplied `CMakeLists` can be used for compilation of the source files and results in an executable `main` file. Call the executable within the `trigger.sh` script with required arguments.
+The supplied `meson.build` can be configured (ie by setting the correct directory to the CImg download folder) and then build with the following commands provided you have both meson and ninja installed.
 
 ```bash
 mkdir build
+meson build
 cd build
-cmake ..
-cmake --build .
+ninja
 ```
 
 Note that the executable is now within the build subdirectory.
+
+After compilation on the Raspberry Pi, it is recommended to enable packet socket support to improve performance. This is done with
+
+```bash
+sudo setcap cap_net_raw+ep main
+```
 
 ---
 
 ## 3. Operation
 
-Running the scripts for triggering of the camera is simple using the command line interface.
+A simple bash script is also provided for scheduling the operation of the cameras for more regular intervals. This is `triggering.sh` and settings can be configured within it and passed as arguments to the `main` binary.
+Running the scripts for triggering of the camera is simple using the command line interface where trigger.sh is called with the minute to start as an argument eg `./trigger.sh 01` to start acquisition at one minute past the hour. By providing this minute, we agree on a synchronised time to start the acquisition in the case of multiple cameras on different devices.
 
 ```bash
-imageDirectory="data/test"
-numImgs=1000
-acquisitionMode="Continuous"  # or "SingleFrame"
-pixelFormat="RGBx888Packed"  # or "Mono8"
-./main $numImages $imageDirectory $acquisitionMode $pixelFormat
-```
+imageDir=`date +'%Y-%m-%d_%H-%M'`
+numImgs=100
+width=1500
+height=1000
+framerate=10
+saveDir=/run/media/pi/data/$imageDir/
 
-A simple bash script is also provided for scheduling the operation of the cameras for more regular intervals. This is `triggering.sh` and settings can be configured within it and passed as arguments to the `main` binary. Other parameters of the camera can also be changed through this JSON file. ***(NOT YET IMPLEMENTED)***
+minute_to_start=$1
+
+mkdir -p $saveDir
+mkdir -p ../logs
+
+./build/aravis $numImgs $saveDir $width $height $framerate $minute_to_start 2>&1 | tee ../logs/$imageDir.txt
+```
 
 ## [License](LICENSE)
 
