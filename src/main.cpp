@@ -12,9 +12,15 @@
 #include "CImg.h"
 #include "check_time.cpp"
 
-std::deque<cimg_library::CImg<unsigned char>> image_deque;
+struct image_data
+{
+    cimg_library::CImg<unsigned char> img;
+    guint32 buffer_id;
+};
+
+std::deque<image_data> image_deque;
 std::mutex deque_mutex;
-int saved_count{};
+guint32 buffer_count{};
 
 auto retrieve_images(ArvStream* stream, const int max_frames, const int width, const int height) -> void
 {
@@ -22,7 +28,6 @@ auto retrieve_images(ArvStream* stream, const int max_frames, const int width, c
     unsigned char* p_data{};  // 8 bit pointer
     std::size_t buffer_size{};
     cimg_library::CImg<unsigned char> image(width, height);
-    cimg_library::CImg<unsigned char> blank_image(width, height, 1, 1, 0);
     int count{};
     unsigned long completed_buffers{};
     unsigned long failed_buffers{};
@@ -39,8 +44,9 @@ auto retrieve_images(ArvStream* stream, const int max_frames, const int width, c
                     image(x, y) = (p_data[x + y * width]);
                 }
             }
+            guint32 id = arv_buffer_get_frame_id(buffer);
             deque_mutex.lock();
-            image_deque.push_back(image);
+            image_deque.push_back(std::move(image_data{image, id}));
             deque_mutex.unlock();
             arv_stream_push_buffer(stream, buffer);
             count++;
@@ -53,34 +59,27 @@ auto retrieve_images(ArvStream* stream, const int max_frames, const int width, c
                 fflush(stdout);
             }
         }
-        else  // push back a black image so we can keep saved images in sync
-        {
-            deque_mutex.lock();
-            image_deque.push_back(blank_image);
-            deque_mutex.unlock();
-            arv_stream_push_buffer(stream, buffer);
-        }
     }
 }
 
 auto save_images(std::string filepath, const int max_frames) -> void
 {
-    while(saved_count < max_frames)
+    while(buffer_count < max_frames)
     {
         deque_mutex.lock();
         if (image_deque.size() != 0)
         {
-            std::string image_path = filepath + std::to_string(saved_count) + ".tiff";
-            auto image = image_deque.front();
+            auto image = image_deque.front().img;
+            buffer_count = image_deque.front().buffer_id;
+            std::string image_path = filepath + std::to_string(buffer_count) + ".tiff";
             image_deque.pop_front();
-            saved_count++;
             deque_mutex.unlock();
             image.save_tiff(image_path.c_str());
         }
         else
         {
              deque_mutex.unlock();
-             std::this_thread::sleep_for(std::chrono::seconds(2));
+             std::this_thread::sleep_for(std::chrono::milliseconds(500));
         }
     }
 }
