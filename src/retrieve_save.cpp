@@ -60,7 +60,7 @@ auto retrieve_images(ArvStream* stream, const int max_frames, const int width, c
     }
 }
 
-auto save_images(std::string filepath, const int max_frames) -> void
+auto save_images(std::string filepath, const guint32 max_frames) -> void
 {
     while(buffer_count < max_frames)
     {

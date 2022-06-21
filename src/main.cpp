@@ -9,7 +9,7 @@ auto main(int argc, char **argv) -> int
         fprintf(stdout, "Usage ./main MaxFrames FilePath Width Height FrameRate MinToStart\n");
     }
     // Acquisition Settings
-    const int max_frames = (argc > 1) ? std::atoi(argv[1]) : 100;
+    const guint32 max_frames = (argc > 1) ? std::atoi(argv[1]) : 100;
     const std::string filepath = (argc > 2) ? argv[2] : "../../data/test/";
     const int width = (argc > 3) ? std::atoi(argv[3]) : 1500;  // max 2560
     const int height = (argc > 4) ? std::atoi(argv[4]) : 1500;  // max 2048
