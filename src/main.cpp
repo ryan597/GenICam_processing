@@ -1,120 +1,39 @@
-#include <cstdlib>
-#include <cstdio>
-#include <cstddef>
-#include <string>
-#include <thread>
-#include <mutex>
-#include <deque>
-
-#define cimg_use_tiff USE_TIFF
-
-#include "arv.h"
-#include "CImg.h"
 #include "check_time.cpp"
+#include "retrieve_save.cpp"
 
-struct image_data
-{
-    cimg_library::CImg<unsigned char> img;
-    guint32 buffer_id;
-};
-
-std::deque<image_data> image_deque;
-std::mutex deque_mutex;
-guint32 buffer_count{};
-
-auto retrieve_images(ArvStream* stream, const int max_frames, const int width, const int height) -> void
-{
-    ArvBuffer *buffer;
-    unsigned char* p_data{};  // 8 bit pointer
-    std::size_t buffer_size{};
-    cimg_library::CImg<unsigned char> image(width, height);
-    int count{};
-    unsigned long completed_buffers{};
-    unsigned long failed_buffers{};
-    unsigned long underrun_buffers{};
-    for (int i = 0; i < max_frames; i++) {
-        buffer = arv_stream_pop_buffer(stream);  // pop_buffer blocks until buffer is available
-        if (ARV_IS_BUFFER(buffer))
-        {
-            p_data = (unsigned char *) arv_buffer_get_data(buffer, &buffer_size);
-            for (int x=0; x < width; x++)
-            {
-                for (int y=0; y < height; y++)
-                {
-                    image(x, y) = (p_data[x + y * width]);
-                }
-            }
-            guint32 id = arv_buffer_get_frame_id(buffer);
-            deque_mutex.lock();
-            image_deque.push_back(std::move(image_data{image, id}));
-            deque_mutex.unlock();
-            arv_stream_push_buffer(stream, buffer);
-            count++;
-            // Stream statistics
-            if (count % 10 == 0)
-            {
-                arv_stream_get_statistics(stream, &completed_buffers, &failed_buffers, &underrun_buffers);
-                fprintf(stdout, "Frames: %d \t|| Completed Buffers: %lu \t || Failed Buffers: %lu \t || Underruns: %lu \n",
-                    count, completed_buffers, failed_buffers, underrun_buffers);
-                fflush(stdout);
-            }
-        }
-    }
-}
-
-auto save_images(std::string filepath, const int max_frames) -> void
-{
-    while(buffer_count < max_frames)
-    {
-        deque_mutex.lock();
-        if (image_deque.size() != 0)
-        {
-            auto image = image_deque.front().img;
-            buffer_count = image_deque.front().buffer_id;
-            std::string image_path = filepath + std::to_string(buffer_count) + ".tiff";
-            image_deque.pop_front();
-            deque_mutex.unlock();
-            image.save_tiff(image_path.c_str());
-        }
-        else
-        {
-             deque_mutex.unlock();
-             std::this_thread::sleep_for(std::chrono::milliseconds(500));
-        }
-    }
-}
 
 auto main(int argc, char **argv) -> int
 {
     if (argc == 1)
     {
-        printf("Usage ./aravis MaxFrames FilePath Width Height FrameRate MinToStart \nUsing defaults \nMaxFrames: 100 \nFilePath: ../../data/test/ \nFrameRate: 20 \n");
+        fprintf(stdout, "Usage ./main MaxFrames FilePath Width Height FrameRate MinToStart\n");
     }
-
+    // Acquisition Settings
     const int max_frames = (argc > 1) ? std::atoi(argv[1]) : 100;
     const std::string filepath = (argc > 2) ? argv[2] : "../../data/test/";
     const int width = (argc > 3) ? std::atoi(argv[3]) : 1500;  // max 2560
     const int height = (argc > 4) ? std::atoi(argv[4]) : 1500;  // max 2048
     const double framerate = (argc > 5) ? std::atoi(argv[5]) : 10;
     const int minute_to_start = (argc > 6) ? std::atoi(argv[6]) : 00;
+    // if using smaller resolution keep the image centered
+    int x_offset = (2560 - width) / 2;
+    int y_offset = (2048 - height) / 2;
 
     ArvCamera *camera;
     GError *error = NULL;
-
     // Connect to the first available camera
     camera = arv_camera_new(NULL, &error);
 
-    //arv_camera_gv_set_packet_size(camera, 1500, &error);
     arv_camera_gv_auto_packet_size(camera, &error);
     arv_camera_set_exposure_time_auto(camera, ARV_AUTO_CONTINUOUS, &error);
     arv_camera_set_gain_auto(camera, ARV_AUTO_CONTINUOUS, &error);
-    arv_camera_set_region(camera, 0, 0, width, height, &error);
+    arv_camera_set_region(camera, x_offset, y_offset, width, height, &error);
     arv_camera_set_frame_rate(camera, framerate, &error);
-    //arv_camera_set_trigger(camera, "Software", &error);
-    printf("Max Frames %d\n", max_frames);
-    printf("Width %d\nHeight %d\n", width, height);
-    printf("Packet Size %u\n", arv_camera_gv_get_packet_size(camera, &error));
-    printf("Framerate %f\n", arv_camera_get_frame_rate(camera, &error));
+    arv_camera_gv_set_packet_delay(camera, 10000, &error);  // helps on RPi when framerate is high
+    // Print for logging
+    fprintf(stdout, "Max Frames: %d\nWidth: %d\nHeight: %d\nPacket Size: %u\nFramerate: %f\n",
+            max_frames, width, height, arv_camera_gv_get_packet_size(camera, &error), arv_camera_get_frame_rate(camera, &error));
+
     if (error != NULL)
     {
         fprintf(stderr, "Camera error!\n");
