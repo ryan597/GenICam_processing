@@ -6,13 +6,16 @@
 #include <deque>
 
 #define cimg_use_tiff USE_TIFF
+#define cimg_use_openmp USE_OPENMP
 
 #include "arv.h"
 #include "CImg.h"
+using namespace cimg_library;
+//#include "plugins/bayer.h"
 
 struct image_data
 {
-    cimg_library::CImg<unsigned char> img;
+    CImg<unsigned short> img;
     guint32 buffer_id;
 };
 
@@ -23,9 +26,9 @@ guint32 buffer_count{};
 auto retrieve_images(ArvStream* stream, const int max_frames, const int width, const int height) -> void
 {
     ArvBuffer *buffer;
-    unsigned char* p_data{};  // 8 bit pointer
+    unsigned short* p_data{};  // 8 bit pointer
     std::size_t buffer_size{};
-    cimg_library::CImg<unsigned char> image(width, height);
+    CImg<unsigned short> image(width, height);
     int count{};
     unsigned long completed_buffers{};
     unsigned long failed_buffers{};
@@ -34,7 +37,7 @@ auto retrieve_images(ArvStream* stream, const int max_frames, const int width, c
         buffer = arv_stream_pop_buffer(stream);  // pop_buffer blocks until buffer is available
         if (ARV_IS_BUFFER(buffer))
         {
-            p_data = (unsigned char *) arv_buffer_get_data(buffer, &buffer_size);
+            p_data = (unsigned short *) arv_buffer_get_data(buffer, &buffer_size);
             for (int x=0; x < width; x++)
             {
                 for (int y=0; y < height; y++)
