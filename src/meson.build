@@ -1,4 +1,5 @@
-project('Genicam-processing', 'cpp', version: '0.2.0')
+project('Genicam-processing', 'cpp', version: '0.2.0', 
+  default_options : ['cpp_std=c++20', 'optimization=3'])
 
 
 aravis_dep = dependency('aravis-0.8')
