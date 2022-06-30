@@ -9,7 +9,7 @@ auto main(int argc, char **argv) -> int
         fprintf(stdout, "Usage ./main MaxFrames FilePath Width Height FrameRate MinToStart\n");
     }
     // Acquisition Settings
-    const int max_frames = (argc > 1) ? std::atoi(argv[1]) : 100;
+    const guint32 max_frames = (argc > 1) ? std::atoi(argv[1]) : 100;
     const std::string filepath = (argc > 2) ? argv[2] : "../../data/test/";
     const int width = (argc > 3) ? std::atoi(argv[3]) : 1500;  // max 2560
     const int height = (argc > 4) ? std::atoi(argv[4]) : 1500;  // max 2048
@@ -25,6 +25,7 @@ auto main(int argc, char **argv) -> int
     camera = arv_camera_new(NULL, &error);
 
     arv_camera_gv_auto_packet_size(camera, &error);
+    arv_camera_set_pixel_format(camera, ARV_PIXEL_FORMAT_BAYER_GR_12, &error); // ARV_PIXEL_FORMAT_BAYER_GR_12_PACKED
     arv_camera_set_exposure_time_auto(camera, ARV_AUTO_CONTINUOUS, &error);
     arv_camera_set_gain_auto(camera, ARV_AUTO_CONTINUOUS, &error);
     arv_camera_set_region(camera, x_offset, y_offset, width, height, &error);
@@ -63,7 +64,10 @@ auto main(int argc, char **argv) -> int
                 // Start the acquisition
                 fprintf(stdout, "Starting acquisition...\n");
                 fflush(stdout);
-                check_time(minute_to_start);
+                if (minute_to_start >= 0)
+                {  // negative minute bypasses check_time for immediate acquisition
+                    check_time(minute_to_start);
+                }
                 arv_camera_start_acquisition(camera, &error);
                 // Raspberry Pi 4 with 4 threads
                 std::thread t1(retrieve_images, stream, max_frames, width, height);
