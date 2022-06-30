@@ -5,7 +5,9 @@ numImgs=100
 width=1500
 height=1000
 framerate=10
-saveDir=/run/media/pi/data/$imageDir/
+
+#saveDir=/run/media/pi/data/$imageDir/
+saveDir=../data/$imageDir/
 minute_to_start=$1
 
 mkdir -p $saveDir
