@@ -1,5 +1,5 @@
 project('Genicam-processing', 'cpp', version: '0.2.0', 
-  default_options : ['cpp_std=c++20', 'optimization=3'])
+  default_options : ['cpp_std=c++20', 'buildtype=release'])
 
 
 aravis_dep = dependency('aravis-0.8')
@@ -9,7 +9,7 @@ openmp_dep = dependency('openmp')
 tiff_dep = dependency('libtiff-4')
 opencv_dep = dependency('opencv4')
 
-cimg_dir = include_directories('/home/ryan/Downloads/CImg')
+cimg_dir = include_directories('/home/pi/Downloads/CImg')
 
 
 programs = [
