@@ -22,7 +22,11 @@ auto main(int argc, char **argv) -> int
     ArvCamera *camera;
     GError *error = NULL;
     // Connect to the first available camera
-    camera = arv_camera_new(NULL, &error);
+    //camera = arv_camera_new(NULL, &error);
+    // connect to the camera with <vendor>-<seriel number>
+    // Pi1 & Cam1 = JAI Corporation-U507993
+    // Pi2 & Cam2 = JAI Corporation-U507993
+    camera = arv_camera_new("JAI Corporation-U507993", &error);
 
     arv_camera_gv_auto_packet_size(camera, &error);
     arv_camera_set_pixel_format(camera, ARV_PIXEL_FORMAT_BAYER_GR_12, &error); // ARV_PIXEL_FORMAT_BAYER_GR_12_PACKED
