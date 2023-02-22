@@ -14,16 +14,11 @@ auto check_time(int minute_to_start) -> void
         since_epoch -= hours;
         auto minutes = std::chrono::duration_cast<std::chrono::minutes>(since_epoch);
         since_epoch -= minutes;
-        auto seconds = std::chrono::duration_cast<std::chrono::seconds>(since_epoch);
-        since_epoch -= seconds;
-        auto milli = std::chrono::duration_cast<std::chrono::milliseconds>(since_epoch);
-        since_epoch -= milli;
-        auto micro = std::chrono::duration_cast<std::chrono::microseconds>(since_epoch);
 
-        if (minutes.count() == minute_to_start && seconds.count() == 0 && milli.count() == 0)
+        if (minutes.count() == minute_to_start)
         {
             cond = false;
-            std::cout << minutes.count() << ':' << seconds.count() << ':' << milli.count() << ':' << micro.count() << '\n';
+            std::cout << minutes.count() << '\n';
         }
     }
 }
