@@ -122,8 +122,8 @@ auto main(int argc, char **argv) -> int
 
     if (error != NULL)
     {
-        // En error happened, display the correspdonding message
-        fprintf(stderr, "Error %s: %s\n", cam_num, error->message);
+        // An error happened, display the correspdonding message
+        fprintf(stderr, "Error %s: %s\n", cam_num.c_str(), error->message);
         g_clear_object(&camera);
         return EXIT_FAILURE;
     }
