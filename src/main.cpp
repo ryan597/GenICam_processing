@@ -38,6 +38,9 @@ auto main(int argc, char **argv) -> int
     const int pixel_format = (argc > 7) ? std::atoi(argv[7]) : 8;
     const std::string cam_num = (argc > 8) ? argv[8] : "JAI Corporation-U507993";  // Leave blank to connect to first available
 
+    // logging
+    auto logfile = fopen((filepath + "log.txt").c_str(), "w");
+    
     // if using smaller resolution keep the image centered
     int x_offset = (2560 - width) / 2;
     int y_offset = (2048 - height) / 2;
@@ -75,16 +78,16 @@ auto main(int argc, char **argv) -> int
         arv_camera_set_frame_rate(camera, framerate, &error);
         arv_camera_gv_set_packet_delay(camera, 100000, &error);  // helps on RPi when framerate is high
         // Print for logging
-        fprintf(stdout, "Max Frames: %d\nWidth: %d\nHeight: %d\nPacket Size: %u\nFramerate: %f\nPixelDepth: %d bits\n",
+        fprintf(logfile, "Max Frames: %d\nWidth: %d\nHeight: %d\nPacket Size: %u\nFramerate: %f\nPixelDepth: %d bits\n",
                 max_frames, width, height, arv_camera_gv_get_packet_size(camera, &error), arv_camera_get_frame_rate(camera, &error), pixel_format);
     }
 
     if (ARV_IS_CAMERA(camera))
     {
-        fprintf(stdout, "Found camera '%s'\n", arv_camera_get_device_serial_number(camera, NULL));
+        fprintf(logfile, "Found camera '%s'\n", arv_camera_get_device_serial_number(camera, NULL));
 
         // Create the stream object without callback
-        ArvStream *stream = arv_camera_create_stream(camera, NULL, NULL, &error);
+        ArvStream *stream = arv_camera_create_stream(camera, stream_callback, NULL, &error);
 
         if (ARV_IS_STREAM(stream))
         {
@@ -95,7 +98,7 @@ auto main(int argc, char **argv) -> int
 
             // Retrive the payload size for buffer creation
             const auto payload = arv_camera_get_payload (camera, &error);
-            fprintf(stdout, "Payload size '%u'\n", payload);
+            fprintf(logfile, "Payload size '%u'\n", payload);
             if (error == NULL)
             {
                 // Insert buffers in the stream buffer pool
@@ -106,16 +109,16 @@ auto main(int argc, char **argv) -> int
             if (error == NULL)
             {
                 // Start the acquisition,
-                fprintf(stdout, "Starting acquisition...\n");
-                fflush(stdout);
+                fprintf(logfile, "Starting acquisition...\n");
                 if (minute_to_start >= 0)
-                {  // negative minute bypasses check_time for immediate acquisition
+                {  // negative minute starts at next minute (ie minute_now + 1)
+		   // if trigger -1 at 16:45:21, then check_time returns at 16:46:00
                     check_time(minute_to_start);
                 }
 
                 arv_camera_start_acquisition(camera, &error);
                 // Raspberry Pi 4 with 4 threads
-                std::thread t1(retrieve_images, stream, max_frames, width, height);
+                std::thread t1(retrieve_images, stream, max_frames, width, height, logfile);
                 std::thread t2(save_images, filepath, max_frames);
                 std::thread t3(save_images, filepath, max_frames);
                 //std::thread t4(save_images, filepath, max_frames);
@@ -128,8 +131,7 @@ auto main(int argc, char **argv) -> int
             if (error == NULL)
             {
                 // Stop the acquisition
-                fprintf(stdout, "End of Acquisition\n");
-                fflush(stdout);
+                fprintf(logfile, "End of Acquisition\n");
                 arv_camera_stop_acquisition(camera, &error);
             }
             // Destroy the stream object
@@ -139,13 +141,16 @@ auto main(int argc, char **argv) -> int
         g_clear_object(&camera);
     }
 
+
     if (error != NULL)
     {
         // An error happened, display the correspdonding message
-        fprintf(stderr, "Error %s: %s\n", cam_num.c_str(), error->message);
+        fprintf(logfile, "Error %s: %s\n", cam_num.c_str(), error->message);
         g_clear_object(&camera);
+	fclose(logfile);
         return EXIT_FAILURE;
     }
 
+    fclose(logfile);
     return EXIT_SUCCESS;
 }

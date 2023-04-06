@@ -31,7 +31,7 @@ std::deque<image_data> image_deque;
 std::mutex deque_mutex;
 guint32 buffer_count{};
 
-auto retrieve_images(ArvStream* stream, const int max_frames, const int width, const int height) -> void
+auto retrieve_images(ArvStream* stream, const int max_frames, const int width, const int height, FILE* logfile) -> void
 {
     ArvBuffer *buffer;
     BITPRECISION* p_data{};
@@ -64,9 +64,8 @@ auto retrieve_images(ArvStream* stream, const int max_frames, const int width, c
             if (count % 10 == 0)
             {
                 arv_stream_get_statistics(stream, &completed_buffers, &failed_buffers, &underrun_buffers);
-                fprintf(stdout, "Frames: %d \t|| Completed Buffers: %lu \t || Failed Buffers: %lu \t || Underruns: %lu \n",
+                fprintf(logfile, "Frames: %d \t|| Completed Buffers: %lu \t || Failed Buffers: %lu \t || Underruns: %lu \n",
                     count, completed_buffers, failed_buffers, underrun_buffers);
-                fflush(stdout);
             }
         }
     }
