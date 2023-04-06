@@ -2,6 +2,26 @@
 #include "retrieve_save.cpp"
 
 
+static void stream_callback(void* user_data, ArvStreamCallbackType type, ArvBuffer* buffer)
+{
+    switch(type){
+        case ARV_STREAM_CALLBACK_TYPE_INIT:
+            if (!arv_make_thread_realtime(10))
+                printf ("Failed to make stream thread realtime\n");
+            break;
+
+        case ARV_STREAM_CALLBACK_TYPE_START_BUFFER:
+            break;
+
+        case ARV_STREAM_CALLBACK_TYPE_BUFFER_DONE:
+            break;
+
+        case ARV_STREAM_CALLBACK_TYPE_EXIT:
+            break;
+    }
+}
+
+
 auto main(int argc, char **argv) -> int
 {
     if (argc == 1)
@@ -68,6 +88,11 @@ auto main(int argc, char **argv) -> int
 
         if (ARV_IS_STREAM(stream))
         {
+            g_object_set(stream,
+                        "socket-buffer", ARV_GV_STREAM_SOCKET_BUFFER_AUTO,
+                        "socket-buffer-size", 0,
+                        NULL);
+
             // Retrive the payload size for buffer creation
             const auto payload = arv_camera_get_payload (camera, &error);
             fprintf(stdout, "Payload size '%u'\n", payload);
