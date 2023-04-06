@@ -7,13 +7,8 @@ height=2048
 framerate=10
 
 #saveDir=/run/media/pi/data/$imageDir/
-<<<<<<< Updated upstream
-saveDir0=../data/0/$imageDir/
-saveDir1=../data/1/$imageDir/
-=======
 saveDir0=/run/media/pi/data/0/$imageDir/
 saveDir1=/run/media/pi/data/1/$imageDir/
->>>>>>> Stashed changes
 
 cam0="JAI Corporation-U507994"
 cam1="JAI Corporation-U507993"
@@ -22,16 +17,10 @@ minute_to_start=$1
 
 mkdir -p $saveDir0
 mkdir -p $saveDir1
-<<<<<<< Updated upstream
 
-./build/main $numImgs $saveDir0 $width $height $framerate $minute_to_start $pixel_format $cam0 &
-./build/main $numImgs $saveDir1 $width $height $framerate $minute_to_start $pixel_format $cam1
-=======
-
-./build/main $numImgs $saveDir0 $width $height $framerate $minute_to_start $pixel_format $cam0 &
-./build/main $numImgs $saveDir1 $width $height $framerate $minute_to_start $pixel_format $cam1
+./build/main $numImgs $saveDir0 $width $height $framerate $minute_to_start $pixel_format "$cam0" &
+./build/main $numImgs $saveDir1 $width $height $framerate $minute_to_start $pixel_format "$cam1"
 
 # Process images after completed acquisition
 ./build/convert $saveDir0 $numImgs
 ./build/convert $saveDir1 $numImgs
->>>>>>> Stashed changes
