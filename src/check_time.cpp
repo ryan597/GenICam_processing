@@ -22,10 +22,6 @@ auto check_time(int minute_to_start) -> void
         auto hours = std::chrono::duration_cast<std::chrono::hours>(since_epoch);
         since_epoch -= hours;
         auto minutes = std::chrono::duration_cast<std::chrono::minutes>(since_epoch);
-<<<<<<< Updated upstream
-        since_epoch -= minutes;
-=======
->>>>>>> Stashed changes
 
         if (minutes.count() == minute_to_start)
         {
