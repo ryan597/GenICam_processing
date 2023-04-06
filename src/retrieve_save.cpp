@@ -25,6 +25,10 @@ struct image_data
 {
     CImg<BITPRECISION> img;
     guint64 buffer_id;
+<<<<<<< Updated upstream
+=======
+    guint64 timestamp;
+>>>>>>> Stashed changes
 };
 
 std::deque<image_data> image_deque;
@@ -54,9 +58,13 @@ auto retrieve_images(ArvStream* stream, const int max_frames, const int width, c
                 }
             }
             guint64 id = arv_buffer_get_frame_id(buffer);
+<<<<<<< Updated upstream
+=======
+	    guint64 timestamp = arv_buffer_get_system_timestamp(buffer);
+>>>>>>> Stashed changes
 
             deque_mutex.lock();
-            image_deque.push_back(std::move(image_data{image, id}));
+            image_deque.push_back(std::move(image_data{image, id, timestamp}));
             deque_mutex.unlock();
             arv_stream_push_buffer(stream, buffer);
             count++;
@@ -79,17 +87,28 @@ auto save_images(std::string filepath, const guint32 max_frames) -> void
         deque_mutex.lock();
         if (image_deque.size() != 0)
         {
+<<<<<<< Updated upstream
             auto image = image_deque.front().img;
             buffer_count = image_deque.front().buffer_id;
             image_deque.pop_front();
             deque_mutex.unlock();
             std::string image_path = filepath + std::to_string(buffer_count) + ".tiff";
+=======
+	    auto image_pop = image_deque.front();
+            image_deque.pop_front(); 
+            buffer_count = image_pop.buffer_id;
+	    auto timestamp = image_pop.timestamp;
+            std::string image_path = filepath + std::to_string(buffer_count) + std::to_string(timestamp) + ".tiff";
+	    deque_mutex.unlock();
+
+	    auto image = image_pop.img;
+>>>>>>> Stashed changes
             image.save_tiff(image_path.c_str());
         }
         else
         {
              deque_mutex.unlock();
-             std::this_thread::sleep_for(std::chrono::milliseconds(500));
+             std::this_thread::sleep_for(std::chrono::milliseconds(250));
         }
     }
 }

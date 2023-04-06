@@ -1,4 +1,4 @@
-project('Genicam-processing', 'cpp', version: '0.2.0', 
+project('Genicam-processing', 'cpp', version: '0.2.0',
   default_options : ['buildtype=release'])
 
 
@@ -10,6 +10,7 @@ tiff_dep = dependency('libtiff-4')
 opencv_dep = dependency('opencv4')
 
 cimg_dir = include_directories('/home/pi/Downloads/CImg')
+#cimg_dir = include_directories('/home/ryan/Downloads/CImg')
 
 programs = [
   'main',

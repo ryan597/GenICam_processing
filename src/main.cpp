@@ -36,10 +36,13 @@ auto main(int argc, char **argv) -> int
     // Pi2 & Cam2 = JAI Corporation-U507993
         camera = arv_camera_new(cam_num.c_str(), &error);
     }
+<<<<<<< Updated upstream
 
     //GInetAddress *addresshost = g_inet_address_new_from_string("10.1.22.135");
     //GInetAddress *addresscam = g_inet_address_new_from_string("10.1.22.185");
     //auto device = arv_gv_device_new(addresshost, addresscam, &error);
+=======
+>>>>>>> Stashed changes
 
     if (error == NULL)
     {
@@ -57,7 +60,11 @@ auto main(int argc, char **argv) -> int
         arv_camera_set_gain_auto(camera, ARV_AUTO_CONTINUOUS, &error);
         arv_camera_set_region(camera, x_offset, y_offset, width, height, &error);
         arv_camera_set_frame_rate(camera, framerate, &error);
+<<<<<<< Updated upstream
         arv_camera_gv_set_packet_delay(camera, 1000, &error);  // helps on RPi when framerate is high
+=======
+        arv_camera_gv_set_packet_delay(camera, 100000, &error);  // helps on RPi when framerate is high
+>>>>>>> Stashed changes
         // Print for logging
         fprintf(stdout, "Max Frames: %d\nWidth: %d\nHeight: %d\nPacket Size: %u\nFramerate: %f\nPixelDepth: %d bits\n",
                 max_frames, width, height, arv_camera_gv_get_packet_size(camera, &error), arv_camera_get_frame_rate(camera, &error), pixel_format);
@@ -91,6 +98,7 @@ auto main(int argc, char **argv) -> int
                 {  // negative minute bypasses check_time for immediate acquisition
                     check_time(minute_to_start);
                 }
+<<<<<<< Updated upstream
                 else {
                     std::this_thread::sleep_for(std::chrono::milliseconds(1000));
                 }
@@ -99,11 +107,23 @@ auto main(int argc, char **argv) -> int
                 std::thread t1(retrieve_images, stream, max_frames, width, height);
                 std::thread t2(save_images, filepath, max_frames);
                 //std::thread t3(save_images, filepath, max_frames);
+=======
+                
+		arv_camera_start_acquisition(camera, &error);
+                // Raspberry Pi 4 with 4 threads
+                std::thread t1(retrieve_images, stream, max_frames, width, height);
+                std::thread t2(save_images, filepath, max_frames);
+                std::thread t3(save_images, filepath, max_frames);
+>>>>>>> Stashed changes
                 //std::thread t4(save_images, filepath, max_frames);
 
                 t1.join();
                 t2.join();
+<<<<<<< Updated upstream
                 //t3.join();
+=======
+                t3.join();
+>>>>>>> Stashed changes
                 //t4.join();
             }
             if (error == NULL)
