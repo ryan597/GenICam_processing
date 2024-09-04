@@ -6,7 +6,7 @@ auto check_time(int minute_to_start) -> void
 {
     // checks the time until it is minute_to_start:00:000
     bool cond = true;
-    if (minute_to_start < 0)
+    if (minute_to_start == 100)
     {
         auto timenow = std::chrono::system_clock::now();
         auto since_epoch = timenow.time_since_epoch();

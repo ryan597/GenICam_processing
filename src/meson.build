@@ -9,8 +9,8 @@ openmp_dep = dependency('openmp')
 tiff_dep = dependency('libtiff-4')
 opencv_dep = dependency('opencv4')
 
-cimg_dir = include_directories('/home/pi/Downloads/CImg')
-#cimg_dir = include_directories('/home/ryan/Downloads/CImg')
+#cimg_dir = include_directories('/home/pi/Downloads/CImg')
+cimg_dir = include_directories('/home/ryan/Downloads/CImg')
 
 programs = [
   'main',

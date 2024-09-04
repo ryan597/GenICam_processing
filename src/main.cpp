@@ -6,8 +6,8 @@ static void stream_callback(void* user_data, ArvStreamCallbackType type, ArvBuff
 {
     switch(type){
         case ARV_STREAM_CALLBACK_TYPE_INIT:
-            if (!arv_make_thread_realtime(10))
-                printf ("Failed to make stream thread realtime\n");
+            //if (!arv_make_thread_realtime(10))
+            //    printf ("Failed to make stream thread realtime\n");
             break;
 
         case ARV_STREAM_CALLBACK_TYPE_START_BUFFER:
@@ -36,15 +36,25 @@ auto main(int argc, char **argv) -> int
     const double framerate = (argc > 5) ? std::atoi(argv[5]) : 10;
     const int minute_to_start = (argc > 6) ? std::atoi(argv[6]) : 00;
     const int pixel_format = (argc > 7) ? std::atoi(argv[7]) : 8;
-    const std::string cam_num = (argc > 8) ? argv[8] : "JAI Corporation-U507993";  // Leave blank to connect to first available
+    const std::string cam_num = (argc > 8) ? argv[8] : "";//"JAI Corporation-U507993";  // Leave blank to connect to first available
 
     // logging
     auto logfile = fopen((filepath + "log.txt").c_str(), "w");
     
     // if using smaller resolution keep the image centered
-    int x_offset = (2560 - width) / 2;
-    int y_offset = (2048 - height) / 2;
-
+    const int x_offset = (argc > 9) ? std::atoi(argv[9]) : 0;
+    const int y_offset = (argc > 10) ? std::atoi(argv[10]) : 0;
+    
+    std::cout << "max frames: " << max_frames
+        << "\nfilepath: " << filepath
+        << "\nwidth: " << width
+        << "\nheight: " << height
+        << "\nframerate: " << framerate
+        << "\nmin to start: " << minute_to_start
+        << "\npixel format: " << pixel_format 
+        << "\ncamera name: " << cam_num
+        << "\nxoffset: " << x_offset
+        << "\nyoffset: " << y_offset << '\n';
     ArvCamera *camera;
     GError *error = NULL;
 
@@ -110,11 +120,9 @@ auto main(int argc, char **argv) -> int
             {
                 // Start the acquisition,
                 fprintf(logfile, "Starting acquisition...\n");
-                if (minute_to_start >= 0)
-                {  // negative minute starts at next minute (ie minute_now + 1)
-		   // if trigger -1 at 16:45:21, then check_time returns at 16:46:00
-                    check_time(minute_to_start);
-                }
+                // negative minute starts at next minute (ie minute_now + 1)
+                // if trigger -1 at 16:45:21, then check_time returns at 16:46:00
+                check_time(minute_to_start);
 
                 arv_camera_start_acquisition(camera, &error);
                 // Raspberry Pi 4 with 4 threads

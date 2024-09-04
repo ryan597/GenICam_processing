@@ -13,12 +13,14 @@ auto main(int argc, char** argv) -> int
     for (int i=1; i<=frames; i++)
     {
         std::string filename = folder + std::to_string(i) + ".tiff";
+        std::string save_as = folder + std::to_string(i) + ".tif"; // processed image
         cv::Mat src = cv::imread(filename, -1);
         cv::Mat rgb, gray;
         cv::cvtColor(src, rgb, cv::COLOR_BayerGR2RGB);
         cv::cvtColor(rgb, gray, cv::COLOR_RGB2GRAY);
-        cv::imwrite(filename, gray);
+        cv::imwrite(save_as, gray);
         count++;
-        std::cout << "Processed: " << count << '\n';
+        if (count % 100 == 0)
+            std::cout << "Processed: " << count << '\n';
     }
 }
