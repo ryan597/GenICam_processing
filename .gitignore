@@ -1,6 +1,6 @@
 meson.build
-data
-data/**
 build/**
 logs/**
+Rpi_web
 *.png
+*.tiff
